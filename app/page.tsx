@@ -3,8 +3,6 @@ import { allProjects } from "contentlayer/generated";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
-const basePath = process.env.NODE_ENV === "production" ? "/website" : "";
-
 export default function Home() {
   const projects = allProjects.sort((a, b) => (a.order || 999) - (b.order || 999));
 
@@ -97,7 +95,7 @@ export default function Home() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
-                href={`${basePath}/oss/`}
+                href="/oss/"
                 className="px-8 py-4 bg-white border-2 border-orange text-orange font-semibold rounded-[2rem] hover:bg-orange hover:text-white transition-colors"
               >
                 View OSS Projects
@@ -157,7 +155,7 @@ export default function Home() {
             </div>
             <div className="mt-12 text-center">
               <Link
-                href={`${basePath}/projects/`}
+                href="/projects/"
                 className="px-8 py-4 bg-charcoal text-white font-semibold rounded-[2rem] hover:bg-charcoal/90 transition-colors inline-block"
               >
                 View All Projects

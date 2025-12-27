@@ -1,8 +1,8 @@
 import { allPages, allProjects } from "contentlayer/generated";
 import { notFound } from "next/navigation";
-import { useMDXComponent } from "next-contentlayer2/hooks";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { MDXContent } from "@/components/MDXContent";
 
 export default function ProjectsPage() {
   const page = allPages.find((p) => p.slug === "projects");
@@ -11,7 +11,6 @@ export default function ProjectsPage() {
     notFound();
   }
 
-  const MDXContent = useMDXComponent(page.body.code);
   const projects = allProjects.sort((a, b) => (a.order || 999) - (b.order || 999));
 
   return (
@@ -20,7 +19,7 @@ export default function ProjectsPage() {
       <main className="min-h-screen pt-24 pb-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
           <div className="prose prose-lg mb-12">
-            <MDXContent />
+            <MDXContent code={page.body.code} />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {projects.map((project) => (

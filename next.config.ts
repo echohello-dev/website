@@ -3,7 +3,7 @@ import { withContentlayer } from "next-contentlayer2";
 
 const nextConfig: NextConfig = {
   output: "export",
-  basePath: process.env.NODE_ENV === "production" ? "/website" : "",
+  basePath: "",
   images: {
     unoptimized: true,
   },

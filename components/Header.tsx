@@ -1,26 +1,27 @@
 import Link from "next/link";
+import ThemeToggle from "./ThemeToggle";
 
 export default function Header() {
   return (
-    <header className="fixed top-0 w-full bg-white/80 backdrop-blur-sm z-50 border-b border-gray-100">
+    <header className="fixed top-0 w-full bg-surface/80 backdrop-blur-sm z-50 border-b border-border animate-fade-in">
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          <Link href="/" className="text-2xl font-bold text-charcoal">
-            <span className="text-orange">echo</span>Hello
+        <div className="flex justify-between items-center h-14">
+          <Link href="/" className="text-sm font-semibold text-text hover:text-accent transition-colors">
+            <span className="text-accent">$</span> echo Hello
           </Link>
-          <div className="flex gap-8">
-            <Link href="/about/" className="text-charcoal hover:text-orange transition-colors">
-              About
+          <div className="flex items-center gap-4">
+            <Link href="/projects/" className="text-sm text-muted hover:text-text transition-colors">
+              projects
             </Link>
-            <Link href="/services/" className="text-charcoal hover:text-orange transition-colors">
-              Services
-            </Link>
-            <Link href="/oss/" className="text-charcoal hover:text-orange transition-colors">
-              OSS
-            </Link>
-            <Link href="/projects/" className="text-charcoal hover:text-orange transition-colors">
-              Projects
-            </Link>
+            <ThemeToggle />
+            <a
+              href="https://github.com/echohello-dev"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-3 py-1.5 text-xs border border-border rounded-lg text-text hover:border-accent hover:text-accent transition-colors"
+            >
+              [GITHUB]
+            </a>
           </div>
         </div>
       </nav>

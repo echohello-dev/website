@@ -452,9 +452,9 @@ export default function ProjectCard({ project, index = 0 }: ProjectCardProps) {
             return (
               <span
                 key={tag}
-                className="text-xs px-2 py-0.5 bg-bg border border-border rounded text-muted flex items-center gap-1"
+                className="text-[10px] px-1.5 py-0.5 bg-transparent border border-border/40 rounded text-muted/80 flex items-center gap-1"
               >
-                {TagIcon && <TagIcon className={`w-3 h-3 ${iconColor}`} />}
+                {TagIcon && <TagIcon className={`w-2.5 h-2.5 ${iconColor}`} />}
                 {tag}
               </span>
             );

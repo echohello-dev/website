@@ -209,10 +209,10 @@ export default function ContributionChart({
           <button
             key={range}
             onClick={() => setTimeRange(range)}
-            className={`px-2 py-1 text-xs font-medium rounded transition-colors ${
+            className={`px-2 py-0.5 text-[10px] font-normal rounded transition-colors ${
               timeRange === range
-                ? "bg-accent text-bg"
-                : "bg-bg border border-border text-text hover:border-accent hover:text-accent"
+                ? "bg-accent/20 text-accent border border-accent/40"
+                : "bg-transparent border border-border/50 text-muted hover:border-accent/40 hover:text-accent"
             }`}
           >
             {range}

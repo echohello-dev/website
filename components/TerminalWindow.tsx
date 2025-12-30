@@ -28,10 +28,11 @@ export default function TerminalWindow() {
         <div className="p-6 space-y-4 font-mono text-sm">
           <div>
             <div className="text-accent">
-              $ echo &quot;Hello, I&apos;m a full-stack developer&quot;
+              $ echo &quot;Hello, we&apos;re a team of full-stack
+              developers&quot;
             </div>
             <div className="text-text ml-2">
-              Hello, I&apos;m a full-stack developer
+              Hello, we&apos;re a team of full-stack developers
             </div>
           </div>
 

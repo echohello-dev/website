@@ -54,10 +54,47 @@ export default function ContributionChart({
 
   // Use filtered commit activity data
   const getRealContributionData = () => {
-    return filteredActivity.map((item) => ({
-      x: item.week,
-      y: item.commits,
-    }));
+    // Group commits by 7-day periods
+    const weeklyData = new Map<number, number>();
+
+    filteredActivity.forEach((item) => {
+      const date = new Date(item.week);
+      // Get the start of the week (Sunday)
+      const dayOfWeek = date.getDay();
+      const weekStart = new Date(date);
+      weekStart.setDate(date.getDate() - dayOfWeek);
+      weekStart.setHours(0, 0, 0, 0);
+      const weekTimestamp = weekStart.getTime();
+
+      // Sum commits for this week
+      weeklyData.set(
+        weekTimestamp,
+        (weeklyData.get(weekTimestamp) || 0) + item.commits
+      );
+    });
+
+    // Convert to array and sort by date
+    const data = Array.from(weeklyData.entries())
+      .map(([timestamp, commits]) => ({
+        x: timestamp,
+        y: commits,
+      }))
+      .sort((a, b) => a.x - b.x);
+
+    // Add a point at today to extend the line to current date
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const lastDataPoint = data[data.length - 1];
+
+    // Only add today's point if it's after the last data point
+    if (!lastDataPoint || lastDataPoint.x < today.getTime()) {
+      data.push({
+        x: today.getTime(),
+        y: lastDataPoint?.y || 0,
+      });
+    }
+
+    return data;
   };
 
   const series = [
@@ -67,7 +104,8 @@ export default function ContributionChart({
     },
   ];
 
-  const currentDate = new Date();
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
 
   const options: ApexOptions = {
     chart: {
@@ -156,6 +194,7 @@ export default function ContributionChart({
     },
     xaxis: {
       type: "datetime",
+      max: tomorrow.getTime(),
     },
     yaxis: {
       min: 0,
@@ -177,7 +216,7 @@ export default function ContributionChart({
     annotations: {
       xaxis: [
         {
-          x: currentDate.getTime(),
+          x: tomorrow.getTime(),
           strokeDashArray: 0,
           borderColor: "#FFA217",
           label: {
@@ -189,7 +228,7 @@ export default function ContributionChart({
               fontWeight: 600,
               fontFamily: "var(--font-geist-mono, monospace)",
             },
-            text: currentDate.toLocaleDateString("en-US", {
+            text: tomorrow.toLocaleDateString("en-US", {
               month: "short",
               day: "numeric",
               year: "numeric",

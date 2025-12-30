@@ -10,20 +10,12 @@ export default function Header() {
         <div className="flex justify-between items-center h-14">
           <Link href="/" className="flex items-center gap-2 text-sm font-semibold text-text hover:text-accent transition-colors">
             <Image 
-              src="/images/emblem-color.svg" 
+              src="/images/emblem-circle-color-logo.svg" 
               alt="echoHello logo" 
               width={24} 
               height={24}
-              className="dark:hidden"
             />
-            <Image 
-              src="/images/emblem-circle-white.svg" 
-              alt="echoHello logo" 
-              width={24} 
-              height={24}
-              className="hidden dark:block"
-            />
-            <span className="text-accent">$</span> echo Hello
+            echoHello
           </Link>
           <div className="flex items-center gap-4">
             <Link href="/projects/" className="text-sm text-muted hover:text-text transition-colors">

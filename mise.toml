@@ -14,6 +14,14 @@ description = "Build the production site"
 run = "bun run lint"
 description = "Run linter"
 
+[tasks.format]
+run = "bun run format"
+description = "Format code with Prettier"
+
+[tasks."format:check"]
+run = "bun run format:check"
+description = "Check code formatting"
+
 [tasks.install]
 run = "bun install"
 description = "Install dependencies"

@@ -15,7 +15,7 @@ export default function Home() {
         {/* Hero Section with Terminal */}
         <section className="py-16 px-4 sm:px-6 lg:px-8">
           <TerminalWindow />
-          
+
           <div className="max-w-3xl mx-auto mt-8 flex flex-col sm:flex-row gap-4 justify-center items-center animate-fade-in-delay">
             <Link
               href="/projects/"
@@ -43,7 +43,11 @@ export default function Home() {
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {featuredProjects.map((project, index) => (
-                <ProjectCard key={project.title} project={project} index={index} />
+                <ProjectCard
+                  key={project.title}
+                  project={project}
+                  index={index}
+                />
               ))}
             </div>
           </div>

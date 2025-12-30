@@ -1,0 +1,17 @@
+# Ignore artifacts:
+build
+coverage
+out
+.next
+
+# Ignore generated files:
+.contentlayer
+
+# Ignore dependencies:
+node_modules
+
+# Ignore lock files:
+bun.lockb
+package-lock.json
+yarn.lock
+pnpm-lock.yaml

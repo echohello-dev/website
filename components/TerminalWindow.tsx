@@ -23,19 +23,27 @@ export default function TerminalWindow() {
           <div className="text-xs text-muted">echohello@terminal:~</div>
           <div className="w-16"></div>
         </div>
-        
+
         {/* Terminal body */}
         <div className="p-6 space-y-4 font-mono text-sm">
           <div>
-            <div className="text-accent">$ echo &quot;Hello, I&apos;m a full-stack developer&quot;</div>
-            <div className="text-text ml-2">Hello, I&apos;m a full-stack developer</div>
+            <div className="text-accent">
+              $ echo &quot;Hello, I&apos;m a full-stack developer&quot;
+            </div>
+            <div className="text-text ml-2">
+              Hello, I&apos;m a full-stack developer
+            </div>
           </div>
-          
+
           <div>
-            <div className="text-accent">$ echo &quot;Building AI tooling, DX, cloud, OSS&quot;</div>
-            <div className="text-text ml-2">Building AI tooling, DX, cloud, OSS</div>
+            <div className="text-accent">
+              $ echo &quot;Building AI tooling, DX, cloud, OSS&quot;
+            </div>
+            <div className="text-text ml-2">
+              Building AI tooling, DX, cloud, OSS
+            </div>
           </div>
-          
+
           <div>
             <div className="text-accent">$ ls projects/</div>
             <div className="text-muted ml-2 mt-1">
@@ -47,7 +55,7 @@ export default function TerminalWindow() {
               deploy-engine<span className="text-border"> / </span>
             </div>
           </div>
-          
+
           <div className="flex items-center">
             <span className="text-accent">$</span>
             {showCursor && (

@@ -8,17 +8,23 @@ export default function Header() {
     <header className="fixed top-0 w-full bg-surface/80 backdrop-blur-sm z-50 border-b border-border animate-fade-in">
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-14">
-          <Link href="/" className="flex items-center gap-2 text-sm font-semibold text-text hover:text-accent transition-colors">
-            <Image 
-              src="/images/emblem-circle-color-logo.svg" 
-              alt="echoHello logo" 
-              width={24} 
+          <Link
+            href="/"
+            className="flex items-center gap-2 text-sm font-semibold text-text hover:text-accent transition-colors"
+          >
+            <Image
+              src="/images/emblem-circle-color-logo.svg"
+              alt="echoHello logo"
+              width={24}
               height={24}
             />
             echoHello
           </Link>
           <div className="flex items-center gap-4">
-            <Link href="/projects/" className="text-sm text-muted hover:text-text transition-colors">
+            <Link
+              href="/projects/"
+              className="text-sm text-muted hover:text-text transition-colors"
+            >
               projects
             </Link>
             <ThemeToggle />

@@ -10,8 +10,8 @@ export default function Icon() {
 </svg>`,
     {
       headers: {
-        'Content-Type': 'image/svg+xml',
+        "Content-Type": "image/svg+xml",
       },
     }
-  )
+  );
 }

@@ -126,13 +126,17 @@ export async function fetchGitHubProjects(
     );
 
     if (!response.ok) {
-      throw new Error(`GitHub API error: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `GitHub API error: ${response.status} ${response.statusText}`
+      );
     }
 
     const repos: GitHubRepo[] = await response.json();
 
     return repos
-      .filter((repo) => !repo.archived && repo.stargazers_count >= filterByStars)
+      .filter(
+        (repo) => !repo.archived && repo.stargazers_count >= filterByStars
+      )
       .map(transformRepo)
       .sort((a, b) => b.stars - a.stars);
   } catch (error) {
@@ -165,7 +169,5 @@ export async function fetchMultipleGitHubProjects(
   );
 
   // Flatten and sort by stars
-  return projects
-    .flat()
-    .sort((a, b) => b.stars - a.stars);
+  return projects.flat().sort((a, b) => b.stars - a.stars);
 }

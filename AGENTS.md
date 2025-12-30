@@ -5,6 +5,7 @@
 **echohello.dev** is a Next.js 16 portfolio website showcasing projects and services. It uses **Contentlayer2** for MDX-based content management with a static export architecture. The design features a terminal aesthetic with dark/light theme support.
 
 ### Key Tech Stack
+
 - **Framework**: Next.js 16 (static export via `output: "export"`)
 - **Content**: Contentlayer2 + MDX files in `content/` directory
 - **Styling**: Tailwind CSS 4 + CSS variables for theming
@@ -21,15 +22,18 @@
 ### 1. Content Pipeline: MDX to React Components
 
 All content lives in `content/` organized by type:
+
 - **Projects**: `content/projects/*.mdx` → `Project` document type
 - **Pages**: `content/pages/*.mdx` → `Page` document type
 
 **Contentlayer Config** ([contentlayer.config.ts](contentlayer.config.ts)):
+
 - Defines document schemas with required fields (title, description)
 - Auto-computes `slug` from file path: `projects/cli-tools.mdx` → slug `cli-tools`
 - Outputs generated types to `.contentlayer/generated` (auto-aliased in tsconfig)
 
 **Rendering Pattern** ([components/MDXContent.tsx](components/MDXContent.tsx)):
+
 ```tsx
 // Client component that renders compiled MDX code to React
 const Component = useMDXComponent(code);
@@ -37,6 +41,7 @@ return <Component />;
 ```
 
 **Usage in Pages**: Pages query contentlayer data to fetch content, pass compiled code to MDXContent:
+
 ```tsx
 // Example from app/projects/page.tsx pattern
 import { allProjects } from "@/.contentlayer/generated";
@@ -55,11 +60,13 @@ import { allProjects } from "@/.contentlayer/generated";
 Two data sources exist with different purposes:
 
 **Hardcoded Projects** ([lib/data.ts](lib/data.ts)):
+
 - Used for homepage featured projects (slice 0-6)
 - Manually maintained array of `Project` interface objects
 - Properties: title, description, websiteUrl?, githubUrl?, tags?
 
 **GitHub API Integration** ([lib/github-projects.ts](lib/github-projects.ts)):
+
 - Utility functions to fetch live repo data from GitHub API
 - `fetchGitHubProjects(owner)` - single user/org
 - `fetchMultipleGitHubProjects(owners[])` - multiple owners
@@ -72,41 +79,49 @@ Two data sources exist with different purposes:
 ## Critical Developer Workflows
 
 ### Local Development
+
 ```bash
 mise run dev  # Recommended: runs bun run dev
 # or
 bun run dev  # Runs: contentlayer2 build && next dev
 ```
+
 - Contentlayer watches `content/` and rebuilds generated types
 - Next.js dev server hot-reloads on component/config changes
 - Generated types available immediately in editors
 - Tasks defined in [mise.toml](mise.toml)
 
 ### Building for Production
+
 ```bash
 mise run build  # Recommended: runs bun run build
 # or
 bun run build  # Runs: contentlayer2 build && next build
 ```
+
 - Creates static HTML in `.next/out/` directory
 - Requires contentlayer step to complete first (it runs in sequence)
 - Fails if contentlayer schema validation fails
 
 ### Linting
+
 ```bash
 mise run lint  # Recommended: runs bun run lint
 # or
 bun run lint  # ESLint with Next.js config
 ```
+
 - Uses eslint.config.mjs (flat config format)
 - Runs on all `.ts` and `.tsx` files
 
 ### Installing Dependencies
+
 ```bash
 mise run install  # Recommended: runs bun install
 # or
 bun install
 ```
+
 - Uses Bun package manager (faster than npm/yarn)
 - Configured in package.json: `"packageManager": "bun@latest"`
 
@@ -115,6 +130,7 @@ bun install
 ## Design System & Styling Conventions
 
 ### CSS Variable Theming ([app/globals.css](app/globals.css))
+
 - Root-level CSS variables control entire color palette
 - Light/dark mode variants in `:root` and `.dark` selector
 - **Colors**: `--bg`, `--surface`, `--border`, `--text`, `--muted`, `--accent`
@@ -122,11 +138,13 @@ bun install
 - **Font**: Geist Mono (monospace terminal aesthetic)
 
 ### Tailwind Integration
+
 - Uses `@theme inline` to expose CSS variables to Tailwind
 - Custom animations in globals.css: `fadeIn`, `fadeInUp`, `fadeInDelay`, `cursor-blink`
 - Classes like `text-text`, `bg-bg`, `border-border` reference variables
 
 ### Component Patterns
+
 - All components accept className for flexibility
 - Transition animations on interactive elements: `transition-colors`, `transition-opacity`
 - Header uses `backdrop-blur-sm` with fixed positioning (z-50)
@@ -137,17 +155,20 @@ bun install
 ## Integration Points & External Dependencies
 
 ### next-themes
+
 - Wraps app in `<ThemeProvider>` in [app/layout.tsx](app/layout.tsx)
 - Attributes: `class` mode (adds `.dark` to html element)
 - Default: dark mode (`defaultTheme="dark"`)
 - System preference respected: `enableSystem`
 
 ### next-contentlayer2
+
 - Provides `useMDXComponent` hook for client-side rendering
 - Provides generated document arrays (allProjects, allPages)
 - Must import from generated path: `@/.contentlayer/generated`
 
 ### date-fns
+
 - Utility for date formatting (potential use in project metadata display)
 
 ---
@@ -164,6 +185,7 @@ bun install
 ```
 
 **Key files to modify for common tasks**:
+
 - Add projects: `content/projects/*.mdx` + add to featured list in `lib/data.ts`
 - Update colors: [app/globals.css](app/globals.css) CSS variables
 - Add pages: `content/pages/*.mdx` + link in [components/Header.tsx](components/Header.tsx)
@@ -188,6 +210,7 @@ bun install
 ## Extending the Project
 
 ### Adding New Content Types
+
 1. Define new `DocumentType` in [contentlayer.config.ts](contentlayer.config.ts)
 2. Create content directory (e.g., `content/blog/`)
 3. Add files matching `filePathPattern`
@@ -195,11 +218,13 @@ bun install
 5. Import and use in pages via `allYourNewType` array
 
 ### Integrating Dynamic GitHub Projects
+
 - Use `fetchGitHubProjects()` in build process or API route
 - Currently available but unused—could replace `lib/data.ts` array for live data
 - Requires `GITHUB_TOKEN` env var to avoid rate limiting
 
 ### Custom Theme Variants
+
 - Add new CSS variables to `:root` and `.dark` in [app/globals.css](app/globals.css)
 - Reference in Tailwind via `@theme inline` section
 - Update TypeScript color references if creating typed theme object

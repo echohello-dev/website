@@ -7,7 +7,7 @@
   --border: #e5d5c0;
   --text: #271911;
   --muted: #8b7355;
-  --accent: #FFA217;
+  --accent: #ffa217;
 }
 
 .dark {
@@ -17,7 +17,7 @@
   --border: #3a342d;
   --text: #f5f0e8;
   --muted: #9a8977;
-  --accent: #FFA217;
+  --accent: #ffa217;
 }
 
 @theme inline {
@@ -32,8 +32,12 @@
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: 'Geist Mono', ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, 'DejaVu Sans Mono', monospace;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  font-family:
+    "Geist Mono", ui-monospace, "Cascadia Code", "Source Code Pro", Menlo,
+    Consolas, "DejaVu Sans Mono", monospace;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
 }
 
 /* Entrance animations */
@@ -58,10 +62,12 @@ body {
 }
 
 @keyframes blink {
-  0%, 49% {
+  0%,
+  49% {
     opacity: 1;
   }
-  50%, 100% {
+  50%,
+  100% {
     opacity: 0;
   }
 }

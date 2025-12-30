@@ -10,8 +10,8 @@ export default function AppleIcon() {
 </svg>`,
     {
       headers: {
-        'Content-Type': 'image/svg+xml',
+        "Content-Type": "image/svg+xml",
       },
     }
-  )
+  );
 }

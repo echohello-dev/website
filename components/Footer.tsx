@@ -4,7 +4,8 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
           <div className="text-xs text-muted">
-            <span className="text-accent">$</span> © 2025 echoHello --all-rights-reserved
+            <span className="text-accent">$</span> © 2025 echoHello
+            --all-rights-reserved
           </div>
           <div className="flex gap-4">
             <a

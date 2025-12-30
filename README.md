@@ -29,9 +29,9 @@ mise run lint     # Run linter
 ## Project Data
 
 Project information is managed in two places:
+
 - **Homepage featured projects**: Hardcoded in [lib/data.ts](lib/data.ts)
 - **MDX content**: `content/projects/*.mdx` files
 - **GitHub integration**: Available in [lib/github-projects.ts](lib/github-projects.ts) (not currently used)
 
 See [AGENTS.md](AGENTS.md) for detailed development guide.
-

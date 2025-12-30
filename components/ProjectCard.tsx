@@ -1,6 +1,25 @@
 import type { Project } from "@/lib/data";
-import { LuStar, LuGithub, LuExternalLink, LuCode, LuCalendar, LuZap } from "react-icons/lu";
-import { SiReact, SiTypescript, SiTailwindcss, SiNodedotjs, SiPython, SiAmazon, SiFigma, SiDocker, SiKubernetes, SiNextdotjs, SiOpenai } from "react-icons/si";
+import {
+  LuStar,
+  LuGithub,
+  LuExternalLink,
+  LuCode,
+  LuCalendar,
+  LuZap,
+} from "react-icons/lu";
+import {
+  SiReact,
+  SiTypescript,
+  SiTailwindcss,
+  SiNodedotjs,
+  SiPython,
+  SiAmazon,
+  SiFigma,
+  SiDocker,
+  SiKubernetes,
+  SiNextdotjs,
+  SiOpenai,
+} from "react-icons/si";
 import { FaTerminal, FaCloud, FaPalette, FaCogs } from "react-icons/fa";
 
 interface ProjectCardProps {
@@ -10,14 +29,14 @@ interface ProjectCardProps {
 
 function getTagIcon(tag: string) {
   const tagLower = tag.toLowerCase();
-  
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const iconMap: Record<string, any> = {
     react: SiReact,
     typescript: SiTypescript,
     tailwind: SiTailwindcss,
-    'tailwindcss': SiTailwindcss,
-    'node.js': SiNodedotjs,
+    tailwindcss: SiTailwindcss,
+    "node.js": SiNodedotjs,
     nodejs: SiNodedotjs,
     python: SiPython,
     aws: SiAmazon,
@@ -25,7 +44,7 @@ function getTagIcon(tag: string) {
     docker: SiDocker,
     k8s: SiKubernetes,
     kubernetes: SiKubernetes,
-    'next.js': SiNextdotjs,
+    "next.js": SiNextdotjs,
     nextjs: SiNextdotjs,
     openai: SiOpenai,
     ai: SiOpenai,
@@ -35,13 +54,13 @@ function getTagIcon(tag: string) {
     design: FaPalette,
     devops: FaCogs,
   };
-  
+
   return iconMap[tagLower];
 }
 
 export default function ProjectCard({ project, index = 0 }: ProjectCardProps) {
   const delay = index * 100;
-  
+
   return (
     <div
       className="bg-surface border border-border rounded-lg p-6 hover:border-accent hover:-translate-y-0.5 transition-all duration-200 animate-fade-in-delay group"
@@ -59,7 +78,7 @@ export default function ProjectCard({ project, index = 0 }: ProjectCardProps) {
           </span>
         )}
       </div>
-      
+
       <p className="text-xs text-muted mb-3 leading-relaxed">
         {project.description}
       </p>
@@ -83,7 +102,7 @@ export default function ProjectCard({ project, index = 0 }: ProjectCardProps) {
           )}
         </div>
       )}
-      
+
       {project.tags && project.tags.length > 0 && (
         <div className="flex flex-wrap gap-2 mb-4">
           {project.tags.map((tag) => {
@@ -100,7 +119,7 @@ export default function ProjectCard({ project, index = 0 }: ProjectCardProps) {
           })}
         </div>
       )}
-      
+
       <div className="flex gap-2">
         {project.websiteUrl && (
           <a

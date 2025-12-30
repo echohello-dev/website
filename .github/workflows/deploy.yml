@@ -30,6 +30,12 @@ jobs:
       - name: Install dependencies
         run: mise run install
 
+      - name: Check formatting
+        run: mise run format:check
+
+      - name: Lint
+        run: mise run lint
+
       - name: Build
         run: mise run build
 

@@ -1,4 +1,4 @@
-import { fetchGitHubProjects, EnrichedProject } from "./github-projects";
+import { fetchGitHubProjects } from "./github-projects";
 
 export interface Project {
   title: string;

@@ -1,31 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import type { ApexOptions } from "apexcharts";
 
 const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
 
 interface ContributionChartProps {
-  lastActivity?: Date;
-  createdAt?: Date;
-  updatedAt?: Date;
   commitActivity?: { week: number; commits: number }[];
 }
 
 export default function ContributionChart({
-  lastActivity,
-  createdAt,
-  updatedAt,
   commitActivity,
 }: ContributionChartProps) {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted || !commitActivity || commitActivity.length === 0) {
+  if (!commitActivity || commitActivity.length === 0) {
     return null;
   }
 

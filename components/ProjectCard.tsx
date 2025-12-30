@@ -11,6 +11,7 @@ interface ProjectCardProps {
 function getTagIcon(tag: string) {
   const tagLower = tag.toLowerCase();
   
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const iconMap: Record<string, any> = {
     react: SiReact,
     typescript: SiTypescript,

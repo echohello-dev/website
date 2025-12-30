@@ -1,3 +1,5 @@
+export const dynamic = "force-static";
+
 export default function AppleIcon() {
   return new Response(
     `<svg width="180" height="180" viewBox="0 0 267 267" fill="none" xmlns="http://www.w3.org/2000/svg">

@@ -27,12 +27,12 @@ export default function TerminalWindow() {
         {/* Terminal body */}
         <div className="p-6 space-y-4 font-mono text-sm">
           <div>
-            <div className="text-accent">$ echo "Hello, I'm a full-stack developer"</div>
-            <div className="text-text ml-2">Hello, I'm a full-stack developer</div>
+            <div className="text-accent">$ echo &quot;Hello, I&apos;m a full-stack developer&quot;</div>
+            <div className="text-text ml-2">Hello, I&apos;m a full-stack developer</div>
           </div>
           
           <div>
-            <div className="text-accent">$ echo "Building AI tooling, DX, cloud, OSS"</div>
+            <div className="text-accent">$ echo &quot;Building AI tooling, DX, cloud, OSS&quot;</div>
             <div className="text-text ml-2">Building AI tooling, DX, cloud, OSS</div>
           </div>
           

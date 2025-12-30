@@ -10,7 +10,7 @@ interface ContributionChartProps {
   commitActivity?: { week: number; commits: number }[];
 }
 
-type TimeRange = "1m" | "6m" | "12m" | "5y";
+type TimeRange = "1m" | "6m" | "12m";
 
 export default function ContributionChart({
   commitActivity,
@@ -34,9 +34,6 @@ export default function ContributionChart({
         break;
       case "12m":
         date.setFullYear(date.getFullYear() - 1);
-        break;
-      case "5y":
-        date.setFullYear(date.getFullYear() - 5);
         break;
     }
     return date;
@@ -81,19 +78,6 @@ export default function ContributionChart({
       }))
       .sort((a, b) => a.x - b.x);
 
-    // Add a point at today to extend the line to current date
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const lastDataPoint = data[data.length - 1];
-
-    // Only add today's point if it's after the last data point
-    if (!lastDataPoint || lastDataPoint.x < today.getTime()) {
-      data.push({
-        x: today.getTime(),
-        y: lastDataPoint?.y || 0,
-      });
-    }
-
     return data;
   };
 
@@ -103,9 +87,6 @@ export default function ContributionChart({
       data: getRealContributionData(),
     },
   ];
-
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
 
   const options: ApexOptions = {
     chart: {
@@ -194,7 +175,6 @@ export default function ContributionChart({
     },
     xaxis: {
       type: "datetime",
-      max: tomorrow.getTime(),
     },
     yaxis: {
       min: 0,
@@ -213,38 +193,13 @@ export default function ContributionChart({
         size: 6,
       },
     },
-    annotations: {
-      xaxis: [
-        {
-          x: tomorrow.getTime(),
-          strokeDashArray: 0,
-          borderColor: "#FFA217",
-          label: {
-            borderColor: "#FFA217",
-            style: {
-              color: "#1a1a1a",
-              background: "#FFA217",
-              fontSize: "11px",
-              fontWeight: 600,
-              fontFamily: "var(--font-geist-mono, monospace)",
-            },
-            text: tomorrow.toLocaleDateString("en-US", {
-              month: "short",
-              day: "numeric",
-              year: "numeric",
-            }),
-            position: "right",
-          },
-        },
-      ],
-    },
   };
 
   return (
     <div className="w-full">
       {/* Time Range Tabs */}
       <div className="flex gap-1 mb-2">
-        {(["1m", "6m", "12m", "5y"] as const).map((range) => (
+        {(["1m", "6m", "12m"] as const).map((range) => (
           <button
             key={range}
             onClick={() => setTimeRange(range)}

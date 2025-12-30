@@ -59,4 +59,5 @@ export const Page = defineDocumentType(() => ({
 export default makeSource({
   contentDirPath: "content",
   documentTypes: [Project, Page],
+  disableImportAliasWarning: true,
 });

@@ -379,8 +379,8 @@ export default function ProjectCard({ project, index = 0 }: ProjectCardProps) {
         )}
       </div>
 
-      <div className="relative mb-3 h-8 group-hover/desc:h-auto overflow-hidden group/desc">
-        <p className="text-xs text-muted leading-relaxed">
+      <div className="relative mb-3 h-8 group-hover/desc:h-auto overflow-hidden group/desc transition-all duration-200">
+        <p className="text-xs text-muted leading-relaxed line-clamp-2 group-hover/desc:line-clamp-none">
           {project.description}
         </p>
         <div className="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-t from-surface to-transparent pointer-events-none group-hover/desc:opacity-0 transition-opacity duration-200" />

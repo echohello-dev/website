@@ -43,7 +43,7 @@ export default function Header() {
               href="https://github.com/echohello-dev"
               target="_blank"
               rel="noopener noreferrer"
-              className="px-3 py-1.5 text-xs border border-border rounded-lg text-text hover:border-accent hover:text-accent transition-colors flex items-center gap-1"
+              className="px-3 py-2 text-xs border border-border rounded-lg text-text hover:border-accent hover:text-accent transition-colors flex items-center gap-1 h-9"
             >
               <LuGithub className="w-4 h-4" />
               <span>GITHUB</span>

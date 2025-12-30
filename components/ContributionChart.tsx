@@ -35,8 +35,6 @@ export default function ContributionChart({
   ];
 
   const currentDate = new Date();
-  const lastDataPoint = commitActivity[commitActivity.length - 1];
-  const lastDataX = lastDataPoint?.week || currentDate.getTime();
 
   const options: ApexOptions = {
     chart: {
@@ -129,6 +127,19 @@ export default function ContributionChart({
     yaxis: {
       min: 0,
       max: maxCommits > 0 ? Math.ceil(maxCommits * 1.1) : 10,
+      show: false,
+      labels: {
+        show: false,
+      },
+    },
+    markers: {
+      size: 4,
+      colors: ["#FFA217"],
+      strokeColors: "#FFA217",
+      strokeWidth: 1,
+      hover: {
+        size: 6,
+      },
     },
     annotations: {
       xaxis: [

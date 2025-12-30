@@ -133,7 +133,7 @@ export default function ContributionChart({
       },
     },
     markers: {
-      size: 4,
+      size: 0,
       colors: ["#FFA217"],
       strokeColors: "#FFA217",
       strokeWidth: 1,

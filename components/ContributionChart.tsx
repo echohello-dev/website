@@ -112,7 +112,38 @@ export default function ContributionChart({
       },
     },
     tooltip: {
-      enabled: false,
+      enabled: true,
+      theme: "dark",
+      style: {
+        fontSize: "11px",
+        fontFamily: "var(--font-geist-mono, monospace)",
+      },
+      x: {
+        format: "MMM dd, yyyy",
+      },
+      y: {
+        formatter: (value: number) => `${Math.round(value)}% activity`,
+      },
+      marker: {
+        show: true,
+        fillColors: ["#FFA217"],
+      },
+      custom: ({ series, seriesIndex, dataPointIndex, w }) => {
+        const value = series[seriesIndex][dataPointIndex];
+        const date = new Date(
+          w.globals.seriesX[seriesIndex][dataPointIndex]
+        ).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        });
+        return `
+          <div style="background: #1a1a1a; border: 1px solid #FFA217; padding: 8px 12px; border-radius: 6px;">
+            <div style="color: #FFA217; font-size: 11px; margin-bottom: 2px;">${date}</div>
+            <div style="color: #e5e5e5; font-size: 12px; font-weight: 600;">${Math.round(value)}% activity</div>
+          </div>
+        `;
+      },
     },
     xaxis: {
       type: "datetime",

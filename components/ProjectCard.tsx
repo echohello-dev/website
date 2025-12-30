@@ -351,7 +351,7 @@ export default function ProjectCard({ project, index = 0 }: ProjectCardProps) {
         ease: "easeOut",
       }}
       whileHover={{ y: -4 }}
-      className="bg-surface border border-border rounded-lg p-6 hover:border-accent transition-colors duration-200 group"
+      className="bg-surface border border-border rounded-lg p-6 hover:border-accent transition-colors duration-200 group flex flex-col"
     >
       <div className="flex items-start justify-between mb-3">
         {project.githubUrl || project.websiteUrl ? (
@@ -378,7 +378,7 @@ export default function ProjectCard({ project, index = 0 }: ProjectCardProps) {
         )}
       </div>
 
-      <p className="text-xs text-muted mb-3 leading-relaxed">
+      <p className="text-xs text-muted mb-3 leading-relaxed line-clamp-2 h-8">
         {project.description}
       </p>
 
@@ -430,13 +430,13 @@ export default function ProjectCard({ project, index = 0 }: ProjectCardProps) {
         </div>
       )}
 
-      <div className="flex gap-2">
+      <div className="flex gap-2 justify-end mt-auto">
         {project.websiteUrl && (
           <a
             href={project.websiteUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="px-3 py-1.5 text-xs border border-border rounded-lg text-text hover:border-accent hover:text-accent transition-colors flex items-center gap-1"
+            className="px-3 py-1.5 text-xs border border-border rounded-lg text-text hover:border-accent hover:text-accent transition-colors flex items-center gap-1 h-8"
           >
             <LuExternalLink className="w-3.5 h-3.5" />
             <span>VISIT</span>
@@ -447,7 +447,7 @@ export default function ProjectCard({ project, index = 0 }: ProjectCardProps) {
             href={project.githubUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="px-3 py-1.5 text-xs border border-border rounded-lg text-text hover:border-accent hover:text-accent transition-colors flex items-center gap-1"
+            className="px-3 py-1.5 text-xs border border-border rounded-lg text-text hover:border-accent hover:text-accent transition-colors flex items-center gap-1 h-8"
           >
             <LuGithub className="w-3.5 h-3.5" />
             <span>CODE</span>

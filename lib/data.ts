@@ -65,6 +65,47 @@ export const hardcodedProjects: Project[] = [
 ];
 
 /**
+ * Calculate activity score for sorting
+ * Higher score = more recent activity
+ */
+function getActivityScore(project: Project): number {
+  if (!project.lastActivity) return 0;
+
+  const daysAgo = Math.floor(
+    (Date.now() - project.lastActivity.getTime()) / (1000 * 60 * 60 * 24)
+  );
+
+  // Activity decay: very recent = highest score
+  if (daysAgo <= 7) return 1000;
+  if (daysAgo <= 30) return 500;
+  if (daysAgo <= 90) return 250;
+  if (daysAgo <= 180) return 100;
+  return 10;
+}
+
+/**
+ * Sort projects by activity and stars
+ * Primary: Activity score
+ * Secondary: Star count
+ */
+function sortProjectsByActivityAndStars(projects: Project[]): Project[] {
+  return projects.sort((a, b) => {
+    const activityScoreA = getActivityScore(a);
+    const activityScoreB = getActivityScore(b);
+
+    // First compare by activity
+    if (activityScoreA !== activityScoreB) {
+      return activityScoreB - activityScoreA;
+    }
+
+    // Then by stars
+    const starsA = a.stars || 0;
+    const starsB = b.stars || 0;
+    return starsB - starsA;
+  });
+}
+
+/**
  * Fetch projects from GitHub API with fallback to hardcoded projects
  * This will be called at build time for static generation
  */
@@ -78,9 +119,9 @@ export async function getProjects(): Promise<Project[]> {
       sort: "updated",
     });
 
-    // If we successfully fetched GitHub projects, return them
+    // If we successfully fetched GitHub projects, sort and return them
     if (githubProjects.length > 0) {
-      return githubProjects;
+      return sortProjectsByActivityAndStars(githubProjects);
     }
   } catch (error) {
     console.warn(

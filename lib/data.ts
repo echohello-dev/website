@@ -111,34 +111,46 @@ function sortProjectsByActivityAndStars(projects: Project[]): Project[] {
 }
 
 /**
- * Fetch projects from GitHub API with fallback to hardcoded projects
- * This will be called at build time for static generation
+ * Fetch projects from GitHub API with timeout and fallback
+ * Uses hardcoded projects in development to avoid blocking dev server startup
  */
-export async function getProjects(): Promise<Project[]> {
+async function fetchGitHubProjectsWithTimeout(
+  timeoutMs: number = 5000
+): Promise<Project[]> {
   const startTime = Date.now();
   const event = {
     timestamp: new Date().toISOString(),
-    operation: "get_projects",
+    operation: "fetch_github_projects_with_timeout",
     service: "data-layer",
     owner: "echohello-dev",
-    config: {
-      per_page: 50,
-      filter_by_stars: 0,
-      sort: "updated",
-      has_token: !!process.env.GITHUB_TOKEN,
-    },
+    timeout_ms: timeoutMs,
   };
 
   try {
-    // Fetch projects from GitHub (echohello-dev organization)
-    const githubProjects = await fetchGitHubProjects("echohello-dev", {
-      token: process.env.GITHUB_TOKEN,
-      perPage: 50,
-      filterByStars: 0, // Include all projects
-      sort: "updated",
-    });
+    // Create a promise that rejects after timeout
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(
+        () =>
+          reject(
+            new Error(
+              `GitHub API fetch timeout after ${timeoutMs}ms. Using hardcoded projects.`
+            )
+          ),
+        timeoutMs
+      )
+    );
 
-    // If we successfully fetched GitHub projects, sort and return them
+    // Race between actual fetch and timeout
+    const githubProjects = await Promise.race([
+      fetchGitHubProjects("echohello-dev", {
+        token: process.env.GITHUB_TOKEN,
+        perPage: 50,
+        filterByStars: 0,
+        sort: "updated",
+      }),
+      timeoutPromise,
+    ]);
+
     if (githubProjects.length > 0) {
       const sortedProjects = sortProjectsByActivityAndStars(githubProjects);
 
@@ -148,13 +160,6 @@ export async function getProjects(): Promise<Project[]> {
         source: "github_api",
         duration_ms: Date.now() - startTime,
         projects_count: sortedProjects.length,
-        projects_with_activity: sortedProjects.filter((p) => p.lastActivity)
-          .length,
-        total_stars: sortedProjects.reduce((sum, p) => sum + (p.stars || 0), 0),
-        languages: [
-          ...new Set(sortedProjects.map((p) => p.language).filter(Boolean)),
-        ],
-        most_recent_activity: sortedProjects[0]?.lastActivity?.toISOString(),
       });
 
       return sortedProjects;
@@ -162,34 +167,43 @@ export async function getProjects(): Promise<Project[]> {
 
     console.info({
       ...event,
-      outcome: "success",
+      outcome: "empty_response",
       source: "hardcoded_fallback",
-      reason: "empty_github_response",
       duration_ms: Date.now() - startTime,
-      projects_count: hardcodedProjects.length,
     });
 
     return hardcodedProjects;
   } catch (error) {
-    const errorCode =
-      error instanceof Error && "code" in error
-        ? (error as Error & { code?: string }).code
-        : undefined;
-
     console.warn({
       ...event,
       outcome: "error",
       source: "hardcoded_fallback",
       duration_ms: Date.now() - startTime,
-      error_type: error instanceof Error ? error.name : "UnknownError",
       error_message: error instanceof Error ? error.message : String(error),
-      error_code: errorCode,
-      projects_count: hardcodedProjects.length,
     });
 
-    // Fallback to hardcoded projects
     return hardcodedProjects;
   }
+}
+
+/**
+ * Get projects from cache or GitHub API
+ * Quickly returns hardcoded projects in development
+ * Can fetch fresh GitHub data in production/build with proper timeout
+ */
+export async function getProjects(): Promise<Project[]> {
+  // In development, use hardcoded projects immediately to avoid blocking dev server
+  if (process.env.NODE_ENV === "development") {
+    // Non-blocking: attempt GitHub fetch in background (fire and forget logging)
+    fetchGitHubProjectsWithTimeout(3000).catch(() => {
+      /* Ignore failures during dev */
+    });
+
+    return hardcodedProjects;
+  }
+
+  // In production/build, try to fetch GitHub projects with timeout
+  return fetchGitHubProjectsWithTimeout(10000);
 }
 
 // Export hardcoded projects as the default for backward compatibility

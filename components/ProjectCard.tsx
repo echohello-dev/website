@@ -1,3 +1,5 @@
+"use client";
+
 import type { Project } from "@/lib/data";
 import {
   LuStar,
@@ -21,6 +23,7 @@ import {
   SiOpenai,
 } from "react-icons/si";
 import { FaTerminal, FaCloud, FaPalette, FaCogs } from "react-icons/fa";
+import { motion } from "framer-motion";
 
 interface ProjectCardProps {
   project: Project;
@@ -59,12 +62,17 @@ function getTagIcon(tag: string) {
 }
 
 export default function ProjectCard({ project, index = 0 }: ProjectCardProps) {
-  const delay = index * 100;
-
   return (
-    <div
-      className="bg-surface border border-border rounded-lg p-6 hover:border-accent hover:-translate-y-0.5 transition-all duration-200 animate-fade-in-delay group"
-      style={{ animationDelay: `${delay}ms` }}
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{
+        duration: 0.3,
+        delay: index * 0.1,
+        ease: "easeOut",
+      }}
+      whileHover={{ y: -4 }}
+      className="bg-surface border border-border rounded-lg p-6 hover:border-accent transition-colors duration-200 group"
     >
       <div className="flex items-start justify-between mb-3">
         <h3 className="text-sm font-semibold text-text flex items-center gap-2">
@@ -144,6 +152,6 @@ export default function ProjectCard({ project, index = 0 }: ProjectCardProps) {
           </a>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }

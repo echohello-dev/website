@@ -1,3 +1,5 @@
+import { fetchGitHubProjects, EnrichedProject } from "./github-projects";
+
 export interface Project {
   title: string;
   description: string;
@@ -13,7 +15,8 @@ export interface Project {
   contributionActivityLevel?: string;
 }
 
-export const projects: Project[] = [
+// Hardcoded featured projects (used as fallback or to showcase specific projects)
+export const hardcodedProjects: Project[] = [
   {
     title: "COMPONENT LIBRARY",
     description:
@@ -60,3 +63,35 @@ export const projects: Project[] = [
     tags: ["DevOps", "Docker", "K8s"],
   },
 ];
+
+/**
+ * Fetch projects from GitHub API with fallback to hardcoded projects
+ * This will be called at build time for static generation
+ */
+export async function getProjects(): Promise<Project[]> {
+  try {
+    // Fetch projects from GitHub (echohello-dev organization)
+    const githubProjects = await fetchGitHubProjects("echohello-dev", {
+      token: process.env.GITHUB_TOKEN,
+      perPage: 50,
+      filterByStars: 0, // Include all projects
+      sort: "updated",
+    });
+
+    // If we successfully fetched GitHub projects, return them
+    if (githubProjects.length > 0) {
+      return githubProjects;
+    }
+  } catch (error) {
+    console.warn(
+      "Failed to fetch GitHub projects, using hardcoded data:",
+      error
+    );
+  }
+
+  // Fallback to hardcoded projects
+  return hardcodedProjects;
+}
+
+// Export hardcoded projects as the default for backward compatibility
+export const projects: Project[] = hardcodedProjects;

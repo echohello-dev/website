@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import AnimatedLayout from "@/components/AnimatedLayout";
 
 export const metadata: Metadata = {
   title: "echoHello - Terminal",
@@ -21,7 +22,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange={false}
         >
-          {children}
+          <AnimatedLayout>{children}</AnimatedLayout>
         </ThemeProvider>
       </body>
     </html>

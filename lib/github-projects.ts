@@ -98,23 +98,25 @@ async function fetchCommitActivity(
 
     const data = JSON.parse(result);
 
-    // Validate that parsed data is an array
+    // Handle non-array responses (GitHub returns object with status/message on error)
     if (!Array.isArray(data)) {
       console.warn({
         ...event,
-        outcome: "invalid_format",
+        outcome: "empty_activity",
         duration_ms: Date.now() - startTime,
-        error_type: "UnexpectedResponseFormat",
-        error_message: "Expected array response",
+        reason: "Repository has no commit activity or stats not yet computed",
         response_type: typeof data,
       });
       return [];
     }
 
-    const commitActivity = data.map((item) => ({
-      week: item.week * 1000, // Convert to milliseconds
-      commits: item.total,
-    }));
+    // Filter out entries with zero commits
+    const commitActivity = data
+      .filter((item) => item.total > 0)
+      .map((item) => ({
+        week: item.week * 1000, // Convert to milliseconds
+        commits: item.total,
+      }));
 
     console.info({
       ...event,
@@ -126,13 +128,17 @@ async function fetchCommitActivity(
 
     return commitActivity;
   } catch (error) {
+    const errorCode =
+      error instanceof Error && "code" in error
+        ? (error as Error & { code?: string }).code
+        : undefined;
     console.warn({
       ...event,
       outcome: "error",
       duration_ms: Date.now() - startTime,
       error_type: error instanceof Error ? error.name : "UnknownError",
       error_message: error instanceof Error ? error.message : String(error),
-      error_code: (error as any)?.code,
+      error_code: errorCode,
     });
     return [];
   }
@@ -205,13 +211,17 @@ async function fetchRepoStats(
 
     return { contributors, totalCommits };
   } catch (error) {
+    const errorCode =
+      error instanceof Error && "code" in error
+        ? (error as Error & { code?: string }).code
+        : undefined;
     console.warn({
       ...event,
       outcome: "error",
       duration_ms: Date.now() - startTime,
       error_type: error instanceof Error ? error.name : "UnknownError",
       error_message: error instanceof Error ? error.message : String(error),
-      error_code: (error as any)?.code,
+      error_code: errorCode,
       contributors: 0,
       total_commits: 0,
     });
@@ -359,13 +369,17 @@ export async function fetchGitHubProjects(
 
     return sortedProjects;
   } catch (error) {
+    const errorCode =
+      error instanceof Error && "code" in error
+        ? (error as Error & { code?: string }).code
+        : undefined;
     console.error({
       ...event,
       outcome: "error",
       duration_ms: Date.now() - startTime,
       error_type: error instanceof Error ? error.name : "UnknownError",
       error_message: error instanceof Error ? error.message : String(error),
-      error_code: (error as any)?.code,
+      error_code: errorCode,
       error_stack: error instanceof Error ? error.stack : undefined,
     });
     throw error;
@@ -406,6 +420,10 @@ export async function fetchMultipleGitHubProjects(
         });
         return { owner, projects, success: true };
       } catch (error) {
+        const errorCode =
+          error instanceof Error && "code" in error
+            ? (error as Error & { code?: string }).code
+            : undefined;
         console.warn({
           timestamp: new Date().toISOString(),
           operation: "fetch_github_projects_single_owner",
@@ -413,7 +431,7 @@ export async function fetchMultipleGitHubProjects(
           outcome: "error",
           error_type: error instanceof Error ? error.name : "UnknownError",
           error_message: error instanceof Error ? error.message : String(error),
-          error_code: (error as any)?.code,
+          error_code: errorCode,
         });
         return { owner, projects: [], success: false };
       }

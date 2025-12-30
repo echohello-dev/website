@@ -14,6 +14,7 @@ import {
   LuPersonStanding,
   LuPhoneCall,
   LuFilm,
+  LuUsers,
 } from "react-icons/lu";
 import {
   SiReact,
@@ -424,7 +425,8 @@ export default function ProjectCard({ project, index = 0 }: ProjectCardProps) {
             )}
             {project.contributors !== undefined && project.contributors > 0 && (
               <span className="flex items-center gap-1">
-                👥 {project.contributors}
+                <LuUsers className="w-3.5 h-3.5 flex-shrink-0" />
+                {project.contributors}
               </span>
             )}
             {project.forks !== undefined && project.forks > 0 && (

@@ -258,27 +258,29 @@ async function fetchGitHubProjectsWithTimeout(
 
 /**
  * Get projects from cache or GitHub API
- * Quickly returns hardcoded projects in development
- * Can fetch fresh GitHub data in production/build with proper timeout
+ * Can fetch fresh GitHub data with proper timeout
+ * Set USE_GITHUB_DATA=true to fetch real data in development
  */
 export async function getProjects(): Promise<Project[]> {
   const env = process.env.NODE_ENV || "development";
+  const useGitHubData = process.env.USE_GITHUB_DATA === "true";
 
   console.info({
     timestamp: new Date().toISOString(),
     operation: "get_projects_start",
     environment: env,
-    message: `Getting projects in ${env} environment...`,
+    use_github_data: useGitHubData,
+    message: `Getting projects in ${env} environment... (USE_GITHUB_DATA=${useGitHubData})`,
   });
 
-  // In development, use hardcoded projects immediately to avoid blocking dev server
-  if (env === "development") {
+  // In development, use hardcoded projects unless USE_GITHUB_DATA is set
+  if (env === "development" && !useGitHubData) {
     console.info({
       timestamp: new Date().toISOString(),
       operation: "get_projects_dev",
       environment: env,
       projects_count: hardcodedProjects.length,
-      message: `Returning ${hardcodedProjects.length} hardcoded projects for dev server`,
+      message: `Returning ${hardcodedProjects.length} hardcoded projects for dev server. Set USE_GITHUB_DATA=true to fetch real data.`,
     });
 
     // Non-blocking: attempt GitHub fetch in background (fire and forget logging)

@@ -6,14 +6,14 @@ import { LuGithub } from "react-icons/lu";
 export default function Header() {
   return (
     <header className="fixed top-0 w-full bg-surface/80 backdrop-blur-sm z-50 border-b border-border animate-fade-in">
-      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-14">
+      <nav className="px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto flex justify-between items-center h-14">
           <Link
             href="/"
             className="flex items-center gap-2 text-sm font-semibold text-text hover:text-accent transition-colors"
           >
             <Image
-              src="/images/emblem-circle-color-logo.svg"
+              src="/images/emblem-circle-color-background.svg"
               alt="echoHello logo"
               width={24}
               height={24}

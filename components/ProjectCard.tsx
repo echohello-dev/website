@@ -378,39 +378,63 @@ export default function ProjectCard({ project, index = 0 }: ProjectCardProps) {
         )}
       </div>
 
-      <p className="text-xs text-muted mb-3 leading-relaxed line-clamp-2 h-8">
-        {project.description}
-      </p>
+      <div className="relative mb-3 h-8 group-hover/desc:h-auto overflow-hidden group/desc">
+        <p className="text-xs text-muted leading-relaxed">
+          {project.description}
+        </p>
+        <div className="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-t from-surface to-transparent pointer-events-none group-hover/desc:opacity-0 transition-opacity duration-200" />
+      </div>
 
-      {project.lastActivity && project.createdAt && (
+      {project.commitActivity && project.commitActivity.length > 0 && (
         <div className="mb-3">
           <ContributionChart
             lastActivity={project.lastActivity}
             createdAt={project.createdAt}
             updatedAt={project.updatedAt}
+            commitActivity={project.commitActivity}
           />
         </div>
       )}
 
-      {(project.ageInDays !== undefined ||
-        project.contributionActivityLevel !== undefined) && (
-        <div className="text-xs text-muted mb-3 space-y-1">
-          {project.ageInDays !== undefined && (
-            <p className="flex items-center gap-2">
-              <LuCalendar className="w-3.5 h-3.5 flex-shrink-0" />
-              Created {project.ageInDays} days ago
-              {project.createdAt &&
-                ` (${new Date(project.createdAt).toLocaleDateString()})`}
-            </p>
-          )}
-          {project.contributionActivityLevel && (
-            <p className="flex items-center gap-2 text-accent">
-              <LuZap className="w-3.5 h-3.5 flex-shrink-0" />
-              {project.contributionActivityLevel}
-            </p>
-          )}
-        </div>
-      )}
+      <div className="text-xs text-muted mb-3 space-y-1">
+        {project.ageInDays !== undefined && (
+          <p className="flex items-center gap-2">
+            <LuCalendar className="w-3.5 h-3.5 flex-shrink-0" />
+            Created {project.ageInDays} days ago
+            {project.createdAt &&
+              ` (${new Date(project.createdAt).toLocaleDateString()})`}
+          </p>
+        )}
+        {project.contributionActivityLevel && (
+          <p className="flex items-center gap-2 text-accent">
+            <LuZap className="w-3.5 h-3.5 flex-shrink-0" />
+            {project.contributionActivityLevel}
+          </p>
+        )}
+        {(project.totalCommits !== undefined ||
+          project.contributors !== undefined ||
+          project.forks !== undefined ||
+          project.openIssues !== undefined) && (
+          <div className="flex items-center gap-3 pt-1">
+            {project.totalCommits !== undefined && (
+              <span className="flex items-center gap-1">
+                <LuGithub className="w-3.5 h-3.5 flex-shrink-0" />
+                {project.totalCommits.toLocaleString()} commits
+              </span>
+            )}
+            {project.contributors !== undefined && project.contributors > 0 && (
+              <span className="flex items-center gap-1">
+                👥 {project.contributors}
+              </span>
+            )}
+            {project.forks !== undefined && project.forks > 0 && (
+              <span className="flex items-center gap-1">
+                🔱 {project.forks}
+              </span>
+            )}
+          </div>
+        )}
+      </div>
 
       {project.tags && project.tags.length > 0 && (
         <div className="flex flex-wrap gap-2 mb-4">

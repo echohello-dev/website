@@ -13,6 +13,11 @@ export interface Project {
   lastActivity?: Date;
   ageInDays?: number;
   contributionActivityLevel?: string;
+  commitActivity?: { week: number; commits: number }[];
+  totalCommits?: number;
+  contributors?: number;
+  openIssues?: number;
+  forks?: number;
 }
 
 // Hardcoded featured projects (used as fallback or to showcase specific projects)

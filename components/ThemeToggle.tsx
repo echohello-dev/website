@@ -16,7 +16,7 @@ export default function ThemeToggle() {
 
   if (!mounted) {
     return (
-      <div className="flex items-center gap-1 px-3 py-1.5 border border-border rounded-lg bg-surface">
+      <div className="flex items-center gap-1 px-2 py-1.5 border border-border rounded-lg bg-surface">
         <span className="text-xs text-muted">...</span>
       </div>
     );
@@ -29,7 +29,7 @@ export default function ThemeToggle() {
   ];
 
   return (
-    <div className="flex items-center gap-1 px-2 py-1 border border-border rounded-lg bg-surface">
+    <div className="flex items-center gap-1 px-2 py-1.5 border border-border rounded-lg bg-surface">
       {themes.map((t) => {
         const Icon = t.icon;
         return (

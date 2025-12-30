@@ -10,12 +10,14 @@ interface ContributionChartProps {
   lastActivity?: Date;
   createdAt?: Date;
   updatedAt?: Date;
+  commitActivity?: { week: number; commits: number }[];
 }
 
 export default function ContributionChart({
   lastActivity,
   createdAt,
   updatedAt,
+  commitActivity,
 }: ContributionChartProps) {
   const [mounted, setMounted] = useState(false);
 
@@ -23,41 +25,25 @@ export default function ContributionChart({
     setMounted(true);
   }, []);
 
-  if (!mounted || !lastActivity || !createdAt) {
+  if (!mounted || !commitActivity || commitActivity.length === 0) {
     return null;
   }
 
-  // Generate sample contribution data based on project timeline
-  const generateContributionData = () => {
-    const data: { x: number; y: number }[] = [];
-    const now = Date.now();
-    const startTime = new Date(createdAt).getTime();
-    const lastActivityTime = new Date(lastActivity).getTime();
+  // Find max commits for normalization
+  const maxCommits = Math.max(...commitActivity.map((d) => d.commits));
 
-    // Generate 30 data points representing activity over time
-    for (let i = 0; i < 30; i++) {
-      const timestamp = startTime + ((lastActivityTime - startTime) / 30) * i;
-      const daysSinceActivity = (now - timestamp) / (1000 * 60 * 60 * 24);
-
-      // Activity intensity decreases as we get closer to current time
-      let intensity = Math.max(0, 100 - daysSinceActivity * 2);
-
-      // Add some randomness for realistic look
-      intensity = intensity * (0.5 + Math.random() * 0.5);
-
-      data.push({
-        x: timestamp,
-        y: Math.round(intensity),
-      });
-    }
-
-    return data;
+  // Use real commit activity data
+  const getRealContributionData = () => {
+    return commitActivity.map((item) => ({
+      x: item.week,
+      y: item.commits,
+    }));
   };
 
   const series = [
     {
-      name: "Activity",
-      data: generateContributionData(),
+      name: "Commits",
+      data: getRealContributionData(),
     },
   ];
 
@@ -122,7 +108,8 @@ export default function ContributionChart({
         format: "MMM dd, yyyy",
       },
       y: {
-        formatter: (value: number) => `${Math.round(value)}% activity`,
+        formatter: (value: number) =>
+          `${value} commit${value !== 1 ? "s" : ""}`,
       },
       marker: {
         show: true,
@@ -140,7 +127,7 @@ export default function ContributionChart({
         return `
           <div style="background: #1a1a1a; border: 1px solid #FFA217; padding: 8px 12px; border-radius: 6px;">
             <div style="color: #FFA217; font-size: 11px; margin-bottom: 2px;">${date}</div>
-            <div style="color: #e5e5e5; font-size: 12px; font-weight: 600;">${Math.round(value)}% activity</div>
+            <div style="color: #e5e5e5; font-size: 12px; font-weight: 600;">${value} commit${value !== 1 ? "s" : ""}</div>
           </div>
         `;
       },
@@ -150,7 +137,7 @@ export default function ContributionChart({
     },
     yaxis: {
       min: 0,
-      max: 100,
+      max: maxCommits > 0 ? Math.ceil(maxCommits * 1.1) : 10,
     },
   };
 

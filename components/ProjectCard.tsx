@@ -389,9 +389,6 @@ export default function ProjectCard({ project, index = 0 }: ProjectCardProps) {
       {project.commitActivity && project.commitActivity.length > 0 && (
         <div className="mb-3">
           <ContributionChart
-            lastActivity={project.lastActivity}
-            createdAt={project.createdAt}
-            updatedAt={project.updatedAt}
             commitActivity={project.commitActivity}
           />
         </div>

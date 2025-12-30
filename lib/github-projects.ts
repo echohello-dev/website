@@ -51,28 +51,47 @@ export interface EnrichedProject {
 }
 
 /**
+ * Build GitHub API request headers with authentication
+ */
+function getGitHubHeaders(token?: string): Record<string, string> {
+  const headers: Record<string, string> = {
+    Accept: "application/vnd.github.v3+json",
+  };
+
+  if (token) {
+    headers.Authorization = `token ${token}`;
+  }
+
+  return headers;
+}
+
+/**
  * Fetch GitHub API rate limit information
  */
 async function getRateLimitInfo(token?: string): Promise<RateLimitInfo> {
   try {
-    const { execSync } = await import("child_process");
-    const env = { ...process.env, GH_TOKEN: token || process.env.GITHUB_TOKEN };
+    const response = await fetch("https://api.github.com/rate_limit", {
+      headers: getGitHubHeaders(token),
+    });
 
-    // Fetch rate limit info from GitHub API
-    const result = execSync(
-      `gh api rate_limit --jq '.resources.core | {limit, remaining, reset}'`,
-      { encoding: "utf-8", env, stdio: ["pipe", "pipe", "ignore"] }
-    );
+    if (!response.ok) {
+      throw new Error(
+        `GitHub API error: ${response.status} ${response.statusText}`
+      );
+    }
 
-    const data = JSON.parse(result);
-    const resetTime = new Date(data.reset * 1000);
-    const percentRemaining = (data.remaining / data.limit) * 100;
-    const isLimited = data.remaining <= 0 || percentRemaining < 5;
+    const data = (await response.json()) as {
+      resources: { core: { limit: number; remaining: number; reset: number } };
+    };
+    const coreLimit = data.resources.core;
+    const resetTime = new Date(coreLimit.reset * 1000);
+    const percentRemaining = (coreLimit.remaining / coreLimit.limit) * 100;
+    const isLimited = coreLimit.remaining <= 0 || percentRemaining < 5;
 
     return {
-      limit: data.limit,
-      remaining: data.remaining,
-      reset: data.reset,
+      limit: coreLimit.limit,
+      remaining: coreLimit.remaining,
+      reset: coreLimit.reset,
       resetTime,
       percentRemaining,
       isLimited,
@@ -124,6 +143,23 @@ async function throttledApiCall<T>(
 }
 
 /**
+ * Fetch from GitHub API with error handling
+ */
+async function fetchFromGitHub<T>(url: string, token?: string): Promise<T> {
+  const response = await fetch(url, {
+    headers: getGitHubHeaders(token),
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      `GitHub API error: ${response.status} ${response.statusText}`
+    );
+  }
+
+  return response.json() as Promise<T>;
+}
+
+/**
  * Calculate contribution activity level based on last activity
  */
 function getActivityLevel(lastActivityDate: Date): string {
@@ -139,7 +175,7 @@ function getActivityLevel(lastActivityDate: Date): string {
 }
 
 /**
- * Fetch commit activity for a repository (last 52 weeks) using gh CLI
+ * Fetch commit activity for a repository (last 52 weeks) using GitHub REST API
  */
 async function fetchCommitActivity(
   owner: string,
@@ -156,38 +192,18 @@ async function fetchCommitActivity(
   };
 
   try {
-    const { execSync } = await import("child_process");
+    const url = `https://api.github.com/repos/${owner}/${repo}/stats/commit_activity`;
+    const data = await fetchFromGitHub<
+      Array<{ week: number; total: number; days: number[] }>
+    >(url, token);
 
-    // Use gh CLI to get commit activity stats
-    const result = execSync(
-      `gh api repos/${owner}/${repo}/stats/commit_activity --cache 1h`,
-      {
-        encoding: "utf-8",
-        env: { ...process.env, GH_TOKEN: token || process.env.GITHUB_TOKEN },
-      }
-    );
-
-    // Validate that result is not empty before parsing
-    if (!result || !result.trim()) {
+    // Validate that result is an array
+    if (!Array.isArray(data)) {
       console.info({
         ...event,
         outcome: "empty_response",
         duration_ms: Date.now() - startTime,
         weeks_returned: 0,
-      });
-      return [];
-    }
-
-    const data = JSON.parse(result);
-
-    // Handle non-array responses (GitHub returns object with status/message on error)
-    if (!Array.isArray(data)) {
-      console.warn({
-        ...event,
-        outcome: "empty_activity",
-        duration_ms: Date.now() - startTime,
-        reason: "Repository has no commit activity or stats not yet computed",
-        response_type: typeof data,
       });
       return [];
     }
@@ -227,7 +243,7 @@ async function fetchCommitActivity(
 }
 
 /**
- * Fetch additional repository stats (contributors, total commits) using gh CLI
+ * Fetch additional repository stats (contributors, total commits) using GitHub REST API
  */
 async function fetchRepoStats(
   owner: string,
@@ -244,42 +260,53 @@ async function fetchRepoStats(
   };
 
   try {
-    const { execSync } = await import("child_process");
-    const env = { ...process.env, GH_TOKEN: token || process.env.GITHUB_TOKEN };
-
-    // Fetch contributors count using gh CLI
+    // Fetch contributors count using REST API
     let contributors = 0;
-    let contributorsAttempts = 0;
     try {
-      contributorsAttempts++;
-      const contributorsResult = execSync(
-        `gh api repos/${owner}/${repo}/contributors?per_page=1 --paginate --jq 'length'`,
-        { encoding: "utf-8", env, stdio: ["pipe", "pipe", "ignore"] }
-      );
-      contributors = parseInt(contributorsResult.trim()) || 0;
+      const contributorsUrl = `https://api.github.com/repos/${owner}/${repo}/contributors?per_page=1`;
+      const response = await fetch(contributorsUrl, {
+        headers: getGitHubHeaders(token),
+      });
+
+      if (response.ok) {
+        // Get total from Link header pagination
+        const linkHeader = response.headers.get("link");
+        if (linkHeader) {
+          const lastPageMatch = linkHeader.match(/page=(\d+)>; rel="last"/);
+          if (lastPageMatch) {
+            contributors = parseInt(lastPageMatch[1], 10);
+          }
+        } else {
+          // If no Link header, count the single result
+          const data = (await response.json()) as Array<{ login: string }>;
+          contributors = Array.isArray(data) ? data.length : 0;
+        }
+      }
     } catch {
-      // If pagination fails, try getting the array directly
-      try {
-        contributorsAttempts++;
-        const contributorsResult = execSync(
-          `gh api repos/${owner}/${repo}/contributors --jq 'length'`,
-          { encoding: "utf-8", env, stdio: ["pipe", "pipe", "ignore"] }
-        );
-        contributors = parseInt(contributorsResult.trim()) || 0;
-      } catch {}
+      // If contributors fetch fails, continue with 0
     }
 
-    // Fetch total commits using gh CLI
+    // Fetch total commits using REST API
     let totalCommits = 0;
-    let commitsAttempts = 0;
     try {
-      commitsAttempts++;
-      const commitsResult = execSync(
-        `gh api repos/${owner}/${repo}/commits?per_page=1 -i | grep -i '^link:' | grep -o 'page=[0-9]*' | tail -1 | cut -d= -f2`,
-        { encoding: "utf-8", env, stdio: ["pipe", "pipe", "ignore"] }
-      );
-      totalCommits = parseInt(commitsResult.trim()) || 0;
-    } catch {}
+      const commitsUrl = `https://api.github.com/repos/${owner}/${repo}/commits?per_page=1`;
+      const response = await fetch(commitsUrl, {
+        headers: getGitHubHeaders(token),
+      });
+
+      if (response.ok) {
+        // Get total from Link header pagination
+        const linkHeader = response.headers.get("link");
+        if (linkHeader) {
+          const lastPageMatch = linkHeader.match(/page=(\d+)>; rel="last"/);
+          if (lastPageMatch) {
+            totalCommits = parseInt(lastPageMatch[1], 10);
+          }
+        }
+      }
+    } catch {
+      // If commits fetch fails, continue with 0
+    }
 
     console.info({
       ...event,
@@ -287,8 +314,6 @@ async function fetchRepoStats(
       duration_ms: Date.now() - startTime,
       contributors,
       total_commits: totalCommits,
-      contributors_fetch_attempts: contributorsAttempts,
-      commits_fetch_attempts: commitsAttempts,
     });
 
     return { contributors, totalCommits };
@@ -423,24 +448,61 @@ export async function fetchGitHubProjects(
       return [];
     }
 
-    const { execSync } = await import("child_process");
-    const env = { ...process.env, GH_TOKEN: token };
+    // Fetch repositories using REST API
+    const url = new URL(`https://api.github.com/users/${owner}/repos`);
+    url.searchParams.append("per_page", String(perPage));
+    url.searchParams.append("sort", sort);
+    url.searchParams.append("direction", "desc");
+    url.searchParams.append("type", "public");
 
-    // Use gh CLI to fetch repositories
-    const result = execSync(
-      `gh api users/${owner}/repos --paginate -X GET -f per_page=${perPage} -f sort=${sort} -f direction=desc -f type=public`,
-      { encoding: "utf-8", env }
-    );
+    console.info({
+      timestamp: new Date().toISOString(),
+      operation: "fetch_repos_start",
+      owner,
+      message: "Fetching repositories from GitHub API...",
+    });
 
-    const repos: GitHubRepo[] = JSON.parse(result);
+    const repos = await fetchFromGitHub<GitHubRepo[]>(url.toString(), token);
+
+    console.info({
+      timestamp: new Date().toISOString(),
+      operation: "fetch_repos_complete",
+      owner,
+      total_repos: repos.length,
+      message: `Fetched ${repos.length} repositories`,
+    });
 
     const filteredRepos = repos.filter(
       (repo) => !repo.archived && repo.stargazers_count >= filterByStars
     );
 
+    console.info({
+      timestamp: new Date().toISOString(),
+      operation: "filter_repos_complete",
+      owner,
+      filtered_repos: filteredRepos.length,
+      archived_excluded: repos.filter((r) => r.archived).length,
+      below_star_threshold: repos.filter(
+        (r) => r.stargazers_count < filterByStars
+      ).length,
+      message: `Filtered to ${filteredRepos.length} repositories`,
+    });
+
     // Transform repos and enrich with additional data
     const enrichedProjects = await Promise.all(
-      filteredRepos.map(async (repo) => {
+      filteredRepos.map(async (repo, index) => {
+        const progressPercent = Math.round(
+          ((index + 1) / filteredRepos.length) * 100
+        );
+        console.info({
+          timestamp: new Date().toISOString(),
+          operation: "enrich_repo_progress",
+          owner,
+          repo: repo.name,
+          progress: `${index + 1}/${filteredRepos.length}`,
+          progress_percent: progressPercent,
+          message: `Enriching repository (${index + 1}/${filteredRepos.length})`,
+        });
         const baseProject = transformRepo(repo);
 
         // Parse owner and repo name from full_name
@@ -462,6 +524,16 @@ export async function fetchGitHubProjects(
           150
         );
 
+        console.info({
+          timestamp: new Date().toISOString(),
+          operation: "enrich_repo_complete",
+          owner,
+          repo: repo.name,
+          commits: stats.totalCommits,
+          contributors: stats.contributors,
+          message: `Enriched ${repo.name} with ${stats.totalCommits} commits, ${stats.contributors} contributors`,
+        });
+
         return {
           ...baseProject,
           commitActivity:
@@ -473,6 +545,14 @@ export async function fetchGitHubProjects(
     );
 
     const sortedProjects = enrichedProjects.sort((a, b) => b.stars - a.stars);
+
+    console.info({
+      timestamp: new Date().toISOString(),
+      operation: "enrichment_complete",
+      owner,
+      total_enriched: sortedProjects.length,
+      message: `Completed enrichment of all ${sortedProjects.length} projects`,
+    });
 
     // Check rate limits after API calls
     const finalRateLimitInfo = await getRateLimitInfo(token);
@@ -567,9 +647,9 @@ export async function fetchMultipleGitHubProjects(
     try {
       console.info({
         timestamp: new Date().toISOString(),
-        operation: "fetch_github_projects_single_owner",
+        operation: "fetch_github_projects_single_owner_start",
         owner,
-        message: "Processing owner sequentially",
+        message: `Starting to process owner [${owner}]...`,
       });
 
       const projects = await fetchGitHubProjects(owner, {
@@ -578,10 +658,25 @@ export async function fetchMultipleGitHubProjects(
         token,
       });
 
+      console.info({
+        timestamp: new Date().toISOString(),
+        operation: "fetch_github_projects_single_owner_complete",
+        owner,
+        projects_fetched: projects.length,
+        message: `Completed ${owner}: ${projects.length} projects`,
+      });
+
       results.push({ owner, projects, success: true });
 
       // Add delay between owner requests to throttle
       if (owner !== owners[owners.length - 1]) {
+        console.info({
+          timestamp: new Date().toISOString(),
+          operation: "throttle_between_owners",
+          next_owner: owners[owners.indexOf(owner) + 1],
+          delay_ms: 1000,
+          message: "Throttling 1s before next owner...",
+        });
         await sleep(1000); // 1 second delay between owner requests
       }
     } catch (error) {

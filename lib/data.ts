@@ -127,6 +127,12 @@ async function fetchGitHubProjectsWithTimeout(
   };
 
   try {
+    console.info({
+      ...event,
+      outcome: "starting",
+      message: "Starting GitHub projects fetch...",
+    });
+
     // Create a promise that rejects after timeout
     const timeoutPromise = new Promise<never>((_, reject) =>
       setTimeout(
@@ -152,6 +158,14 @@ async function fetchGitHubProjectsWithTimeout(
     ]);
 
     if (githubProjects.length > 0) {
+      console.info({
+        ...event,
+        outcome: "fetched",
+        duration_ms: Date.now() - startTime,
+        projects_count: githubProjects.length,
+        message: `Fetched ${githubProjects.length} projects from GitHub API`,
+      });
+
       const sortedProjects = sortProjectsByActivityAndStars(githubProjects);
 
       console.info({
@@ -160,6 +174,7 @@ async function fetchGitHubProjectsWithTimeout(
         source: "github_api",
         duration_ms: Date.now() - startTime,
         projects_count: sortedProjects.length,
+        message: "Successfully sorted projects by activity and stars",
       });
 
       return sortedProjects;
@@ -170,6 +185,7 @@ async function fetchGitHubProjectsWithTimeout(
       outcome: "empty_response",
       source: "hardcoded_fallback",
       duration_ms: Date.now() - startTime,
+      message: "GitHub API returned no projects, using hardcoded fallback",
     });
 
     return hardcodedProjects;
@@ -180,6 +196,7 @@ async function fetchGitHubProjectsWithTimeout(
       source: "hardcoded_fallback",
       duration_ms: Date.now() - startTime,
       error_message: error instanceof Error ? error.message : String(error),
+      message: `Error fetching GitHub projects, falling back to hardcoded list`,
     });
 
     return hardcodedProjects;
@@ -192,8 +209,25 @@ async function fetchGitHubProjectsWithTimeout(
  * Can fetch fresh GitHub data in production/build with proper timeout
  */
 export async function getProjects(): Promise<Project[]> {
+  const env = process.env.NODE_ENV || "development";
+
+  console.info({
+    timestamp: new Date().toISOString(),
+    operation: "get_projects_start",
+    environment: env,
+    message: `Getting projects in ${env} environment...`,
+  });
+
   // In development, use hardcoded projects immediately to avoid blocking dev server
-  if (process.env.NODE_ENV === "development") {
+  if (env === "development") {
+    console.info({
+      timestamp: new Date().toISOString(),
+      operation: "get_projects_dev",
+      environment: env,
+      projects_count: hardcodedProjects.length,
+      message: `Returning ${hardcodedProjects.length} hardcoded projects for dev server`,
+    });
+
     // Non-blocking: attempt GitHub fetch in background (fire and forget logging)
     fetchGitHubProjectsWithTimeout(3000).catch(() => {
       /* Ignore failures during dev */
@@ -201,6 +235,13 @@ export async function getProjects(): Promise<Project[]> {
 
     return hardcodedProjects;
   }
+
+  console.info({
+    timestamp: new Date().toISOString(),
+    operation: "get_projects_production",
+    environment: env,
+    message: "Fetching fresh projects from GitHub API for production build...",
+  });
 
   // In production/build, try to fetch GitHub projects with timeout
   return fetchGitHubProjectsWithTimeout(10000);

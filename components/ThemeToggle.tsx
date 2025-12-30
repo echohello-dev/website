@@ -2,7 +2,7 @@
 
 import { useTheme } from "@/components/ThemeProvider";
 import { useEffect, useState } from "react";
-import { Moon, Sun, Zap } from "lucide-react";
+import { LuMoon, LuSun, LuZap } from "react-icons/lu";
 
 export default function ThemeToggle() {
   const { theme, setTheme } = useTheme();
@@ -21,9 +21,9 @@ export default function ThemeToggle() {
   }
 
   const themes = [
-    { value: "dark", label: "dark", icon: Moon },
-    { value: "light", label: "light", icon: Sun },
-    { value: "system", label: "auto", icon: Zap },
+    { value: "dark", label: "dark", icon: LuMoon },
+    { value: "light", label: "light", icon: LuSun },
+    { value: "system", label: "auto", icon: LuZap },
   ];
 
   return (

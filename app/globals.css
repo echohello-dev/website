@@ -38,6 +38,18 @@ body {
   transition:
     background-color 0.3s ease,
     color 0.3s ease;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Allow selection for main content areas */
+main p,
+main article,
+main pre,
+main code,
+.selectable {
+  user-select: text;
+  -webkit-user-select: text;
 }
 
 /* Entrance animations */

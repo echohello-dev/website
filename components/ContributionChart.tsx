@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import dynamic from "next/dynamic";
 import type { ApexOptions } from "apexcharts";
 
@@ -9,19 +10,51 @@ interface ContributionChartProps {
   commitActivity?: { week: number; commits: number }[];
 }
 
+type TimeRange = "1m" | "6m" | "12m" | "5y";
+
 export default function ContributionChart({
   commitActivity,
 }: ContributionChartProps) {
+  const [timeRange, setTimeRange] = useState<TimeRange>("12m");
+
   if (!commitActivity || commitActivity.length === 0) {
     return null;
   }
 
-  // Find max commits for normalization
-  const maxCommits = Math.max(...commitActivity.map((d) => d.commits));
+  // Calculate date ranges
+  const now = new Date();
+  const getDateRange = (range: TimeRange): Date => {
+    const date = new Date(now);
+    switch (range) {
+      case "1m":
+        date.setMonth(date.getMonth() - 1);
+        break;
+      case "6m":
+        date.setMonth(date.getMonth() - 6);
+        break;
+      case "12m":
+        date.setFullYear(date.getFullYear() - 1);
+        break;
+      case "5y":
+        date.setFullYear(date.getFullYear() - 5);
+        break;
+    }
+    return date;
+  };
 
-  // Use real commit activity data
+  const startDate = getDateRange(timeRange).getTime();
+
+  // Filter activity data by time range
+  const filteredActivity = commitActivity.filter(
+    (item) => item.week >= startDate
+  );
+
+  // Find max commits for normalization
+  const maxCommits = Math.max(...filteredActivity.map((d) => d.commits));
+
+  // Use filtered commit activity data
   const getRealContributionData = () => {
-    return commitActivity.map((item) => ({
+    return filteredActivity.map((item) => ({
       x: item.week,
       y: item.commits,
     }));
@@ -169,14 +202,34 @@ export default function ContributionChart({
   };
 
   return (
-    <div className="w-full h-16">
-      <Chart
-        options={options}
-        series={series}
-        type="area"
-        height="100%"
-        width="100%"
-      />
+    <div className="w-full">
+      {/* Time Range Tabs */}
+      <div className="flex gap-1 mb-2">
+        {(["1m", "6m", "12m", "5y"] as const).map((range) => (
+          <button
+            key={range}
+            onClick={() => setTimeRange(range)}
+            className={`px-2 py-1 text-xs font-medium rounded transition-colors ${
+              timeRange === range
+                ? "bg-accent text-bg"
+                : "bg-bg border border-border text-text hover:border-accent hover:text-accent"
+            }`}
+          >
+            {range}
+          </button>
+        ))}
+      </div>
+
+      {/* Chart */}
+      <div className="w-full h-16">
+        <Chart
+          options={options}
+          series={series}
+          type="area"
+          height="100%"
+          width="100%"
+        />
+      </div>
     </div>
   );
 }

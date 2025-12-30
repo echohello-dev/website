@@ -23,49 +23,96 @@ export interface Project {
 // Hardcoded featured projects (used as fallback or to showcase specific projects)
 export const hardcodedProjects: Project[] = [
   {
-    title: "COMPONENT LIBRARY",
+    title: "Backstage",
     description:
-      "A modern React component library with TypeScript support and Tailwind CSS styling. Built for speed and developer experience.",
-    websiteUrl: "https://components.echohello.dev",
-    githubUrl: "https://github.com/echohello-dev/components",
-    tags: ["React", "TypeScript", "Tailwind"],
+      "A production-ready Backstage in a showcase emphasizing developer portal capabilities and enterprise features.",
+    githubUrl: "https://github.com/echohello-dev/backstage",
+    tags: ["TypeScript", "backstage", "developer-portal"],
+    stars: 1,
+    createdAt: new Date("2024-05-04"),
+    updatedAt: new Date("2024-05-04"),
+    lastActivity: new Date("2024-05-04"),
+    ageInDays: Math.floor(
+      (Date.now() - new Date("2024-05-04").getTime()) / (1000 * 60 * 60 * 24)
+    ),
+    totalCommits: 314,
+    contributors: 5,
   },
   {
-    title: "CLI TOOLKIT",
-    description:
-      "Command-line tools for streamlining development workflows. Includes scaffolding, testing utilities, and deployment helpers.",
-    githubUrl: "https://github.com/echohello-dev/cli-tools",
-    tags: ["Node.js", "CLI", "DevTools"],
+    title: "Website",
+    description: "The website for echoHello",
+    websiteUrl: "https://echohello.dev",
+    githubUrl: "https://github.com/echohello-dev/website",
+    tags: ["TypeScript", "nextjs"],
+    stars: 0,
+    createdAt: new Date("2025-12-28"),
+    updatedAt: new Date("2025-12-28"),
+    lastActivity: new Date("2025-12-28"),
+    ageInDays: Math.floor(
+      (Date.now() - new Date("2025-12-28").getTime()) / (1000 * 60 * 60 * 24)
+    ),
+    totalCommits: 32,
+    contributors: 2,
   },
   {
-    title: "AI CODE ASSISTANT",
-    description:
-      "An intelligent coding assistant that helps with code reviews, refactoring suggestions, and documentation generation.",
-    websiteUrl: "https://ai.echohello.dev",
-    githubUrl: "https://github.com/echohello-dev/ai-assistant",
-    tags: ["AI", "Python", "OpenAI"],
+    title: "Betterfit",
+    description: "A workout tracker with auto-tracking capability",
+    githubUrl: "https://github.com/echohello-dev/betterfit",
+    tags: ["Swift"],
+    stars: 0,
+    createdAt: new Date("2025-07-12"),
+    updatedAt: new Date("2025-07-12"),
+    lastActivity: new Date("2025-07-12"),
+    ageInDays: Math.floor(
+      (Date.now() - new Date("2025-07-12").getTime()) / (1000 * 60 * 60 * 24)
+    ),
+    totalCommits: 78,
+    contributors: 2,
   },
   {
-    title: "CLOUD DASHBOARD",
-    description:
-      "Real-time monitoring and management dashboard for cloud infrastructure. Track metrics, logs, and deployments in one place.",
-    websiteUrl: "https://cloud.echohello.dev",
-    tags: ["Next.js", "AWS", "Monitoring"],
+    title: "Yell",
+    description: "A Kahoot / Menti alternative to live quizzes with a spin!",
+    githubUrl: "https://github.com/echohello-dev/yell",
+    tags: ["TypeScript"],
+    stars: 0,
+    createdAt: new Date("2025-07-12"),
+    updatedAt: new Date("2025-07-12"),
+    lastActivity: new Date("2025-07-12"),
+    ageInDays: Math.floor(
+      (Date.now() - new Date("2025-07-12").getTime()) / (1000 * 60 * 60 * 24)
+    ),
+    totalCommits: 40,
+    contributors: 2,
   },
   {
-    title: "DESIGN SYSTEM",
-    description:
-      "Comprehensive design system with tokens, components, and documentation. Enables consistent UI across multiple products.",
-    websiteUrl: "https://design.echohello.dev",
-    githubUrl: "https://github.com/echohello-dev/design-system",
-    tags: ["Design", "Figma", "React"],
+    title: "Wingman",
+    description: "A Slackbot that can help enhance your channel",
+    githubUrl: "https://github.com/echohello-dev/wingman",
+    tags: [],
+    stars: 0,
+    createdAt: new Date("2025-07-12"),
+    updatedAt: new Date("2025-07-12"),
+    lastActivity: new Date("2025-07-12"),
+    ageInDays: Math.floor(
+      (Date.now() - new Date("2025-07-12").getTime()) / (1000 * 60 * 60 * 24)
+    ),
+    totalCommits: 1,
+    contributors: 1,
   },
   {
-    title: "DEPLOYMENT ENGINE",
-    description:
-      "Automated deployment pipeline with zero-downtime releases, rollback capabilities, and environment management.",
-    githubUrl: "https://github.com/echohello-dev/deploy-engine",
-    tags: ["DevOps", "Docker", "K8s"],
+    title: "Transcribe Me",
+    description: "The transcriber that uses Anthropic and OpenAI.",
+    githubUrl: "https://github.com/echohello-dev/transcribe-yt",
+    tags: ["Python", "chatgpt", "claude", "openai"],
+    stars: 6,
+    createdAt: new Date("2024-08-04"),
+    updatedAt: new Date("2024-08-04"),
+    lastActivity: new Date("2024-08-04"),
+    ageInDays: Math.floor(
+      (Date.now() - new Date("2024-08-04").getTime()) / (1000 * 60 * 60 * 24)
+    ),
+    totalCommits: 258,
+    contributors: 2,
   },
 ];
 
@@ -76,8 +123,14 @@ export const hardcodedProjects: Project[] = [
 function getActivityScore(project: Project): number {
   if (!project.lastActivity) return 0;
 
+  // Ensure lastActivity is a Date object
+  const activityDate =
+    project.lastActivity instanceof Date
+      ? project.lastActivity
+      : new Date(project.lastActivity);
+
   const daysAgo = Math.floor(
-    (Date.now() - project.lastActivity.getTime()) / (1000 * 60 * 60 * 24)
+    (Date.now() - activityDate.getTime()) / (1000 * 60 * 60 * 24)
   );
 
   // Activity decay: very recent = highest score

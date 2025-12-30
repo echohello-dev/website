@@ -36,7 +36,7 @@ export default function ThemeToggle() {
           <button
             key={t.value}
             onClick={() => setTheme(t.value)}
-            className={`p-1.5 rounded transition-colors ${
+            className={`p-1.5 rounded transition-colors cursor-pointer ${
               theme === t.value
                 ? "bg-accent text-bg"
                 : "text-muted hover:text-text"

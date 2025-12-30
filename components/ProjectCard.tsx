@@ -90,6 +90,23 @@ interface ProjectCardProps {
   index?: number;
 }
 
+function getActivityLevel(lastActivityDate: Date | string): string {
+  const activityDate =
+    lastActivityDate instanceof Date
+      ? lastActivityDate
+      : new Date(lastActivityDate);
+
+  const daysAgo = Math.floor(
+    (Date.now() - activityDate.getTime()) / (1000 * 60 * 60 * 24)
+  );
+
+  if (daysAgo <= 7) return "Very Active";
+  if (daysAgo <= 30) return "Active";
+  if (daysAgo <= 90) return "Moderately Active";
+  if (daysAgo <= 180) return "Somewhat Active";
+  return "Inactive";
+}
+
 function getTagIcon(tag: string) {
   const tagLower = tag.toLowerCase().replace(/\s+/g, "");
 
@@ -379,11 +396,46 @@ export default function ProjectCard({ project, index = 0 }: ProjectCardProps) {
         )}
       </div>
 
-      <div className="relative mb-3 h-8 group-hover/desc:h-auto overflow-hidden group/desc transition-all duration-200">
-        <p className="text-xs text-muted leading-relaxed line-clamp-2 group-hover/desc:line-clamp-none">
+      <div className="relative mb-3 overflow-hidden group/desc transition-all duration-200">
+        <p className="text-xs text-muted leading-relaxed line-clamp-2 group-hover/desc:line-clamp-none transition-all duration-200">
           {project.description}
         </p>
         <div className="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-t from-surface to-transparent pointer-events-none group-hover/desc:opacity-0 transition-opacity duration-200" />
+      </div>
+
+      {/* Metadata Row - Compact dates and activity */}
+      <div className="flex items-center gap-3 text-xs text-muted mb-2 flex-wrap">
+        {project.createdAt && (
+          <span className="flex items-center gap-1 whitespace-nowrap">
+            <LuCalendar className="w-3 h-3 flex-shrink-0" />
+            {new Date(project.createdAt).toLocaleDateString("en-US", {
+              month: "short",
+              year: "numeric",
+            })}
+            {project.ageInDays !== undefined && (
+              <span className="text-muted/60">({project.ageInDays}d)</span>
+            )}
+          </span>
+        )}
+        {project.lastActivity && (
+          <span className="flex items-center gap-1 text-accent whitespace-nowrap">
+            <LuZap className="w-3 h-3 flex-shrink-0" />
+            {getActivityLevel(project.lastActivity)}
+          </span>
+        )}
+        {/* Stats inline */}
+        {project.totalCommits !== undefined && (
+          <span className="flex items-center gap-1 whitespace-nowrap">
+            <LuGithub className="w-3 h-3 flex-shrink-0" />
+            {project.totalCommits.toLocaleString()}
+          </span>
+        )}
+        {project.contributors !== undefined && project.contributors > 0 && (
+          <span className="flex items-center gap-1 whitespace-nowrap">
+            <LuUsers className="w-3 h-3 flex-shrink-0" />
+            {project.contributors}
+          </span>
+        )}
       </div>
 
       {project.commitActivity && project.commitActivity.length > 0 && (
@@ -392,49 +444,8 @@ export default function ProjectCard({ project, index = 0 }: ProjectCardProps) {
         </div>
       )}
 
-      <div className="text-xs text-muted mb-3 space-y-1">
-        {project.ageInDays !== undefined && (
-          <p className="flex items-center gap-2">
-            <LuCalendar className="w-3.5 h-3.5 flex-shrink-0" />
-            Created {project.ageInDays} days ago
-            {project.createdAt &&
-              ` (${new Date(project.createdAt).toLocaleDateString()})`}
-          </p>
-        )}
-        {project.contributionActivityLevel && (
-          <p className="flex items-center gap-2 text-accent">
-            <LuZap className="w-3.5 h-3.5 flex-shrink-0" />
-            {project.contributionActivityLevel}
-          </p>
-        )}
-        {(project.totalCommits !== undefined ||
-          project.contributors !== undefined ||
-          project.forks !== undefined ||
-          project.openIssues !== undefined) && (
-          <div className="flex items-center gap-3 pt-1">
-            {project.totalCommits !== undefined && (
-              <span className="flex items-center gap-1">
-                <LuGithub className="w-3.5 h-3.5 flex-shrink-0" />
-                {project.totalCommits.toLocaleString()} commits
-              </span>
-            )}
-            {project.contributors !== undefined && project.contributors > 0 && (
-              <span className="flex items-center gap-1">
-                <LuUsers className="w-3.5 h-3.5 flex-shrink-0" />
-                {project.contributors}
-              </span>
-            )}
-            {project.forks !== undefined && project.forks > 0 && (
-              <span className="flex items-center gap-1">
-                🔱 {project.forks}
-              </span>
-            )}
-          </div>
-        )}
-      </div>
-
       {project.tags && project.tags.length > 0 && (
-        <div className="flex flex-wrap gap-2 mb-4">
+        <div className="flex flex-wrap gap-1.5 mb-3">
           {project.tags.map((tag) => {
             const TagIcon = getTagIcon(tag);
             const iconColor = getTagIconColor(tag);

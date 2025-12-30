@@ -388,9 +388,7 @@ export default function ProjectCard({ project, index = 0 }: ProjectCardProps) {
 
       {project.commitActivity && project.commitActivity.length > 0 && (
         <div className="mb-3">
-          <ContributionChart
-            commitActivity={project.commitActivity}
-          />
+          <ContributionChart commitActivity={project.commitActivity} />
         </div>
       )}
 

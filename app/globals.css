@@ -7,17 +7,17 @@
   --border: #e5d5c0;
   --text: #271911;
   --muted: #8b7355;
-  --accent: #fea116;
+  --accent: #FFA217;
 }
 
 .dark {
   /* Dark mode (default) */
-  --bg: #1a1612;
+  --bg: #181514;
   --surface: #241f1a;
   --border: #3a342d;
   --text: #f5f0e8;
   --muted: #9a8977;
-  --accent: #fea116;
+  --accent: #FFA217;
 }
 
 @theme inline {

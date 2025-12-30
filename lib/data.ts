@@ -115,6 +115,20 @@ function sortProjectsByActivityAndStars(projects: Project[]): Project[] {
  * This will be called at build time for static generation
  */
 export async function getProjects(): Promise<Project[]> {
+  const startTime = Date.now();
+  const event = {
+    timestamp: new Date().toISOString(),
+    operation: "get_projects",
+    service: "data-layer",
+    owner: "echohello-dev",
+    config: {
+      per_page: 50,
+      filter_by_stars: 0,
+      sort: "updated",
+      has_token: !!process.env.GITHUB_TOKEN,
+    },
+  };
+
   try {
     // Fetch projects from GitHub (echohello-dev organization)
     const githubProjects = await fetchGitHubProjects("echohello-dev", {
@@ -126,17 +140,56 @@ export async function getProjects(): Promise<Project[]> {
 
     // If we successfully fetched GitHub projects, sort and return them
     if (githubProjects.length > 0) {
-      return sortProjectsByActivityAndStars(githubProjects);
-    }
-  } catch (error) {
-    console.warn(
-      "Failed to fetch GitHub projects, using hardcoded data:",
-      error
-    );
-  }
+      const sortedProjects = sortProjectsByActivityAndStars(githubProjects);
 
-  // Fallback to hardcoded projects
-  return hardcodedProjects;
+      console.info({
+        ...event,
+        outcome: "success",
+        source: "github_api",
+        duration_ms: Date.now() - startTime,
+        projects_count: sortedProjects.length,
+        projects_with_activity: sortedProjects.filter((p) => p.lastActivity)
+          .length,
+        total_stars: sortedProjects.reduce((sum, p) => sum + (p.stars || 0), 0),
+        languages: [
+          ...new Set(sortedProjects.map((p) => p.language).filter(Boolean)),
+        ],
+        most_recent_activity: sortedProjects[0]?.lastActivity?.toISOString(),
+      });
+
+      return sortedProjects;
+    }
+
+    console.info({
+      ...event,
+      outcome: "success",
+      source: "hardcoded_fallback",
+      reason: "empty_github_response",
+      duration_ms: Date.now() - startTime,
+      projects_count: hardcodedProjects.length,
+    });
+
+    return hardcodedProjects;
+  } catch (error) {
+    const errorCode =
+      error instanceof Error && "code" in error
+        ? (error as Error & { code?: string }).code
+        : undefined;
+
+    console.warn({
+      ...event,
+      outcome: "error",
+      source: "hardcoded_fallback",
+      duration_ms: Date.now() - startTime,
+      error_type: error instanceof Error ? error.name : "UnknownError",
+      error_message: error instanceof Error ? error.message : String(error),
+      error_code: errorCode,
+      projects_count: hardcodedProjects.length,
+    });
+
+    // Fallback to hardcoded projects
+    return hardcodedProjects;
+  }
 }
 
 // Export hardcoded projects as the default for backward compatibility

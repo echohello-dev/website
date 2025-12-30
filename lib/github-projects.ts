@@ -3,6 +3,15 @@
  * Requires a GitHub personal access token for higher rate limits
  */
 
+interface RateLimitInfo {
+  limit: number;
+  remaining: number;
+  reset: number;
+  resetTime: Date;
+  percentRemaining: number;
+  isLimited: boolean;
+}
+
 interface GitHubRepo {
   id: number;
   name: string;
@@ -39,6 +48,79 @@ export interface EnrichedProject {
   contributors?: number;
   openIssues?: number;
   forks?: number;
+}
+
+/**
+ * Fetch GitHub API rate limit information
+ */
+async function getRateLimitInfo(token?: string): Promise<RateLimitInfo> {
+  try {
+    const { execSync } = await import("child_process");
+    const env = { ...process.env, GH_TOKEN: token || process.env.GITHUB_TOKEN };
+
+    // Fetch rate limit info from GitHub API
+    const result = execSync(
+      `gh api rate_limit --jq '.resources.core | {limit, remaining, reset}'`,
+      { encoding: "utf-8", env, stdio: ["pipe", "pipe", "ignore"] }
+    );
+
+    const data = JSON.parse(result);
+    const resetTime = new Date(data.reset * 1000);
+    const percentRemaining = (data.remaining / data.limit) * 100;
+    const isLimited = data.remaining <= 0 || percentRemaining < 5;
+
+    return {
+      limit: data.limit,
+      remaining: data.remaining,
+      reset: data.reset,
+      resetTime,
+      percentRemaining,
+      isLimited,
+    };
+  } catch (error) {
+    // Return default values if we can't fetch rate limit info
+    console.warn({
+      timestamp: new Date().toISOString(),
+      operation: "get_rate_limit_info",
+      outcome: "error",
+      error_message:
+        error instanceof Error ? error.message : "Failed to fetch rate limit",
+    });
+
+    return {
+      limit: 60,
+      remaining: 60,
+      reset: Math.floor(Date.now() / 1000) + 3600,
+      resetTime: new Date(Date.now() + 3600000),
+      percentRemaining: 100,
+      isLimited: false,
+    };
+  }
+}
+
+/**
+ * Sleep for a specified number of milliseconds
+ */
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * Throttle API calls to avoid rate limiting
+ * Adds delay between sequential requests
+ */
+async function throttledApiCall<T>(
+  operation: string,
+  fn: () => Promise<T>,
+  delayMs: number = 100
+): Promise<T> {
+  try {
+    const result = await fn();
+    await sleep(delayMs);
+    return result;
+  } catch (error) {
+    throw error;
+  }
 }
 
 /**
@@ -309,6 +391,38 @@ export async function fetchGitHubProjects(
   };
 
   try {
+    // Check rate limits before making API calls
+    const rateLimitInfo = await getRateLimitInfo(token);
+
+    console.info({
+      ...event,
+      operation: "check_rate_limit",
+      rate_limit_info: {
+        limit: rateLimitInfo.limit,
+        remaining: rateLimitInfo.remaining,
+        percent_remaining: rateLimitInfo.percentRemaining.toFixed(2),
+        reset_time: rateLimitInfo.resetTime.toISOString(),
+        is_limited: rateLimitInfo.isLimited,
+      },
+    });
+
+    // If rate limit is nearly exhausted, fail gracefully
+    if (rateLimitInfo.isLimited) {
+      console.warn({
+        ...event,
+        outcome: "rate_limit_exceeded",
+        duration_ms: Date.now() - startTime,
+        rate_limit_info: {
+          limit: rateLimitInfo.limit,
+          remaining: rateLimitInfo.remaining,
+          reset_time: rateLimitInfo.resetTime.toISOString(),
+        },
+        message:
+          "GitHub API rate limit nearly exhausted. Falling back to cached data.",
+      });
+      return [];
+    }
+
     const { execSync } = await import("child_process");
     const env = { ...process.env, GH_TOKEN: token };
 
@@ -332,11 +446,21 @@ export async function fetchGitHubProjects(
         // Parse owner and repo name from full_name
         const [repoOwner, repoName] = repo.full_name.split("/");
 
-        // Fetch commit activity and stats in parallel
-        const [commitActivity, stats] = await Promise.all([
-          fetchCommitActivity(repoOwner, repoName, token),
-          fetchRepoStats(repoOwner, repoName, token),
-        ]);
+        // Fetch commit activity and stats with throttling
+        const commitActivity = await throttledApiCall(
+          `commit_activity:${repoOwner}/${repoName}`,
+          () => fetchCommitActivity(repoOwner, repoName, token),
+          150
+        );
+
+        // Add delay between stats requests to throttle API calls
+        await sleep(150);
+
+        const stats = await throttledApiCall(
+          `repo_stats:${repoOwner}/${repoName}`,
+          () => fetchRepoStats(repoOwner, repoName, token),
+          150
+        );
 
         return {
           ...baseProject,
@@ -349,6 +473,9 @@ export async function fetchGitHubProjects(
     );
 
     const sortedProjects = enrichedProjects.sort((a, b) => b.stars - a.stars);
+
+    // Check rate limits after API calls
+    const finalRateLimitInfo = await getRateLimitInfo(token);
 
     console.info({
       ...event,
@@ -365,6 +492,12 @@ export async function fetchGitHubProjects(
       languages: [
         ...new Set(sortedProjects.map((p) => p.language).filter(Boolean)),
       ],
+      rate_limit_info: {
+        initial_remaining: rateLimitInfo.remaining,
+        final_remaining: finalRateLimitInfo.remaining,
+        calls_made: rateLimitInfo.remaining - finalRateLimitInfo.remaining,
+        reset_time: finalRateLimitInfo.resetTime.toISOString(),
+      },
     });
 
     return sortedProjects;
@@ -388,6 +521,7 @@ export async function fetchGitHubProjects(
 
 /**
  * Fetch repositories from multiple organizations/users
+ * Processes sequentially to avoid rate limiting
  */
 export async function fetchMultipleGitHubProjects(
   owners: string[],
@@ -398,6 +532,8 @@ export async function fetchMultipleGitHubProjects(
   }
 ): Promise<EnrichedProject[]> {
   const startTime = Date.now();
+  const token = options?.token || process.env.GITHUB_TOKEN;
+
   const event = {
     timestamp: new Date().toISOString(),
     operation: "fetch_multiple_github_projects",
@@ -407,39 +543,72 @@ export async function fetchMultipleGitHubProjects(
     config: {
       per_page: options?.perPage || 100,
       filter_by_stars: options?.filterByStars || 0,
-      has_token: !!(options?.token || process.env.GITHUB_TOKEN),
+      has_token: !!token,
+      processing_mode: "sequential",
     },
   };
 
-  const results = await Promise.all(
-    owners.map(async (owner) => {
-      try {
-        const projects = await fetchGitHubProjects(owner, {
-          ...options,
-          sort: "updated",
-        });
-        return { owner, projects, success: true };
-      } catch (error) {
-        const errorCode =
-          error instanceof Error && "code" in error
-            ? (error as Error & { code?: string }).code
-            : undefined;
-        console.warn({
-          timestamp: new Date().toISOString(),
-          operation: "fetch_github_projects_single_owner",
-          owner,
-          outcome: "error",
-          error_type: error instanceof Error ? error.name : "UnknownError",
-          error_message: error instanceof Error ? error.message : String(error),
-          error_code: errorCode,
-        });
-        return { owner, projects: [], success: false };
+  // Check rate limits before processing multiple owners
+  const initialRateLimitInfo = await getRateLimitInfo(token);
+  console.info({
+    ...event,
+    operation: "check_initial_rate_limit",
+    rate_limit_info: {
+      limit: initialRateLimitInfo.limit,
+      remaining: initialRateLimitInfo.remaining,
+      percent_remaining: initialRateLimitInfo.percentRemaining.toFixed(2),
+    },
+  });
+
+  const results = [];
+
+  // Process owners sequentially to avoid rate limiting
+  for (const owner of owners) {
+    try {
+      console.info({
+        timestamp: new Date().toISOString(),
+        operation: "fetch_github_projects_single_owner",
+        owner,
+        message: "Processing owner sequentially",
+      });
+
+      const projects = await fetchGitHubProjects(owner, {
+        ...options,
+        sort: "updated",
+        token,
+      });
+
+      results.push({ owner, projects, success: true });
+
+      // Add delay between owner requests to throttle
+      if (owner !== owners[owners.length - 1]) {
+        await sleep(1000); // 1 second delay between owner requests
       }
-    })
-  );
+    } catch (error) {
+      const errorCode =
+        error instanceof Error && "code" in error
+          ? (error as Error & { code?: string }).code
+          : undefined;
+
+      console.warn({
+        timestamp: new Date().toISOString(),
+        operation: "fetch_github_projects_single_owner",
+        owner,
+        outcome: "error",
+        error_type: error instanceof Error ? error.name : "UnknownError",
+        error_message: error instanceof Error ? error.message : String(error),
+        error_code: errorCode,
+      });
+
+      results.push({ owner, projects: [], success: false });
+    }
+  }
 
   const allProjects = results.flatMap((r) => r.projects);
   const sortedProjects = allProjects.sort((a, b) => b.stars - a.stars);
+
+  // Check final rate limits
+  const finalRateLimitInfo = await getRateLimitInfo(token);
 
   console.info({
     ...event,
@@ -455,6 +624,13 @@ export async function fetchMultipleGitHubProjects(
       count: r.projects.length,
       success: r.success,
     })),
+    rate_limit_info: {
+      initial_remaining: initialRateLimitInfo.remaining,
+      final_remaining: finalRateLimitInfo.remaining,
+      total_calls_made:
+        initialRateLimitInfo.remaining - finalRateLimitInfo.remaining,
+      reset_time: finalRateLimitInfo.resetTime.toISOString(),
+    },
   });
 
   return sortedProjects;

@@ -2,6 +2,7 @@
 
 import { useTheme } from "@/components/ThemeProvider";
 import { useEffect, useState } from "react";
+import { Moon, Sun, Zap } from "lucide-react";
 
 export default function ThemeToggle() {
   const { theme, setTheme } = useTheme();
@@ -20,26 +21,30 @@ export default function ThemeToggle() {
   }
 
   const themes = [
-    { value: "dark", label: "dark" },
-    { value: "light", label: "light" },
-    { value: "system", label: "auto" },
+    { value: "dark", label: "dark", icon: Moon },
+    { value: "light", label: "light", icon: Sun },
+    { value: "system", label: "auto", icon: Zap },
   ];
 
   return (
     <div className="flex items-center gap-1 px-2 py-1 border border-border rounded-lg bg-surface">
-      {themes.map((t) => (
-        <button
-          key={t.value}
-          onClick={() => setTheme(t.value)}
-          className={`px-2 py-1 text-xs rounded transition-colors ${
-            theme === t.value
-              ? "bg-accent text-bg font-semibold"
-              : "text-muted hover:text-text"
-          }`}
-        >
-          {t.label}
-        </button>
-      ))}
+      {themes.map((t) => {
+        const Icon = t.icon;
+        return (
+          <button
+            key={t.value}
+            onClick={() => setTheme(t.value)}
+            className={`p-1.5 rounded transition-colors ${
+              theme === t.value
+                ? "bg-accent text-bg"
+                : "text-muted hover:text-text"
+            }`}
+            title={t.label}
+          >
+            <Icon className="w-4 h-4" />
+          </button>
+        );
+      })}
     </div>
   );
 }

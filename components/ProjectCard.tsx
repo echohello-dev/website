@@ -1,4 +1,5 @@
 import type { Project } from "@/lib/data";
+import { Star, Github, ExternalLink, Code2, Calendar, Zap } from "lucide-react";
 
 interface ProjectCardProps {
   project: Project;
@@ -13,14 +14,42 @@ export default function ProjectCard({ project, index = 0 }: ProjectCardProps) {
       className="bg-surface border border-border rounded-lg p-6 hover:border-accent hover:-translate-y-0.5 transition-all duration-200 animate-fade-in-delay group"
       style={{ animationDelay: `${delay}ms` }}
     >
-      <h3 className="text-sm font-semibold text-text mb-3 flex items-center gap-2">
-        <span className="text-accent">›</span>
-        {project.title}
-      </h3>
+      <div className="flex items-start justify-between mb-3">
+        <h3 className="text-sm font-semibold text-text flex items-center gap-2">
+          <Code2 className="w-4 h-4 text-accent flex-shrink-0" />
+          {project.title}
+        </h3>
+        {project.stars !== undefined && (
+          <span className="text-xs text-accent font-semibold whitespace-nowrap ml-2 flex items-center gap-1">
+            <Star className="w-3.5 h-3.5 fill-current" />
+            {project.stars.toLocaleString()}
+          </span>
+        )}
+      </div>
       
-      <p className="text-xs text-muted mb-4 leading-relaxed">
+      <p className="text-xs text-muted mb-3 leading-relaxed">
         {project.description}
       </p>
+
+      {(project.ageInDays !== undefined ||
+        project.contributionActivityLevel !== undefined) && (
+        <div className="text-xs text-muted mb-3 space-y-1">
+          {project.ageInDays !== undefined && (
+            <p className="flex items-center gap-2">
+              <Calendar className="w-3.5 h-3.5 flex-shrink-0" />
+              Created {project.ageInDays} days ago
+              {project.createdAt &&
+                ` (${new Date(project.createdAt).toLocaleDateString()})`}
+            </p>
+          )}
+          {project.contributionActivityLevel && (
+            <p className="flex items-center gap-2 text-accent">
+              <Zap className="w-3.5 h-3.5 flex-shrink-0" />
+              {project.contributionActivityLevel}
+            </p>
+          )}
+        </div>
+      )}
       
       {project.tags && project.tags.length > 0 && (
         <div className="flex flex-wrap gap-2 mb-4">
@@ -41,9 +70,10 @@ export default function ProjectCard({ project, index = 0 }: ProjectCardProps) {
             href={project.websiteUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="px-3 py-1.5 text-xs border border-border rounded-lg text-text hover:border-accent hover:text-accent transition-colors"
+            className="px-3 py-1.5 text-xs border border-border rounded-lg text-text hover:border-accent hover:text-accent transition-colors flex items-center gap-1"
           >
-            [VISIT]
+            <ExternalLink className="w-3.5 h-3.5" />
+            <span>VISIT</span>
           </a>
         )}
         {project.githubUrl && (
@@ -51,9 +81,10 @@ export default function ProjectCard({ project, index = 0 }: ProjectCardProps) {
             href={project.githubUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="px-3 py-1.5 text-xs border border-border rounded-lg text-text hover:border-accent hover:text-accent transition-colors"
+            className="px-3 py-1.5 text-xs border border-border rounded-lg text-text hover:border-accent hover:text-accent transition-colors flex items-center gap-1"
           >
-            [CODE]
+            <Github className="w-3.5 h-3.5" />
+            <span>CODE</span>
           </a>
         )}
       </div>

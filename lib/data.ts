@@ -4,6 +4,13 @@ export interface Project {
   websiteUrl?: string;
   githubUrl?: string;
   tags?: string[];
+  stars?: number;
+  language?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+  lastActivity?: Date;
+  ageInDays?: number;
+  contributionActivityLevel?: string;
 }
 
 export const projects: Project[] = [

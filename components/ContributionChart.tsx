@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import type { ApexOptions } from "apexcharts";
 
+// Dynamically import ApexCharts with no SSR
 const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
 
 interface ContributionChartProps {
@@ -16,6 +17,12 @@ export default function ContributionChart({
   commitActivity,
 }: ContributionChartProps) {
   const [timeRange, setTimeRange] = useState<TimeRange>("12m");
+  const [mounted, setMounted] = useState(false);
+
+  // Only render chart after component mounts on client
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   if (!commitActivity || commitActivity.length === 0) {
     return null;
@@ -214,15 +221,19 @@ export default function ContributionChart({
         ))}
       </div>
 
-      {/* Chart */}
+      {/* Chart - only render after client mount */}
       <div className="w-full h-16">
-        <Chart
-          options={options}
-          series={series}
-          type="area"
-          height="100%"
-          width="100%"
-        />
+        {mounted ? (
+          <Chart
+            options={options}
+            series={series}
+            type="area"
+            height="100%"
+            width="100%"
+          />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-t from-accent/5 to-accent/20 animate-pulse rounded" />
+        )}
       </div>
     </div>
   );

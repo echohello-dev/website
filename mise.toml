@@ -17,6 +17,14 @@ description = "Build the production site"
 run = "bun run lint"
 description = "Run linter"
 
+[tasks.test]
+run = "bun run test"
+description = "Run unit tests"
+
+[tasks."test:watch"]
+run = "bun run test:watch"
+description = "Run unit tests in watch mode"
+
 [tasks.format]
 run = "bun run format"
 description = "Format code with Prettier"

@@ -43,7 +43,7 @@ export const hardcodedProjects: Project[] = [
     description: "The website for echoHello",
     websiteUrl: "https://echohello.dev",
     githubUrl: "https://github.com/echohello-dev/website",
-    tags: ["TypeScript", "nextjs"],
+    tags: ["TypeScript", "Next.js"],
     stars: 0,
     createdAt: new Date("2025-12-28"),
     updatedAt: new Date("2025-12-28"),
@@ -51,8 +51,13 @@ export const hardcodedProjects: Project[] = [
     ageInDays: Math.floor(
       (Date.now() - new Date("2025-12-28").getTime()) / (1000 * 60 * 60 * 24)
     ),
-    totalCommits: 32,
+    totalCommits: 37,
     contributors: 2,
+    commitActivity: [
+      { week: 1704067200000, commits: 5 },
+      { week: 1704672000000, commits: 12 },
+      { week: 1705276800000, commits: 20 },
+    ],
   },
   {
     title: "Betterfit",

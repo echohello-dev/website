@@ -185,10 +185,14 @@ async function fetchGitHubProjectsWithTimeout(
   };
 
   try {
+    const token = process.env.GITHUB_TOKEN;
     console.info({
       ...event,
+      has_token: !!token,
       outcome: "starting",
-      message: "Starting GitHub projects fetch...",
+      message: token
+        ? "Starting GitHub projects fetch with authentication..."
+        : "Starting GitHub projects fetch without authentication (rate limit: 60/hr)...",
     });
 
     // Create a promise that rejects after timeout
@@ -207,7 +211,7 @@ async function fetchGitHubProjectsWithTimeout(
     // Race between actual fetch and timeout
     const githubProjects = await Promise.race([
       fetchGitHubProjects("echohello-dev", {
-        token: process.env.GITHUB_TOKEN,
+        token,
         perPage: 50,
         filterByStars: 0,
         sort: "updated",

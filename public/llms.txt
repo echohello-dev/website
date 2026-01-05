@@ -1,0 +1,46 @@
+# echohello.dev
+
+> Portfolio and project showcase for echohello-dev. Features terminal-inspired design, developer tooling projects, and software consulting services.
+
+echohello.dev is a statically-generated Next.js portfolio site showcasing:
+- Open-source developer tools and infrastructure projects
+- Software consulting and development services
+- Technical blog posts and project documentation
+
+Built with Next.js 16 (static export), Contentlayer2 for MDX content management, TypeScript, and Tailwind CSS with a terminal aesthetic theme.
+
+## Pages
+
+- [About](https://echohello.dev/about/): Learn more about echoHello
+- [Open Source](https://echohello.dev/oss/): Our open source contributions and projects
+- [Projects](https://echohello.dev/projects/): Browse our portfolio of projects
+- [Services](https://echohello.dev/services/): Our services and offerings
+
+## Featured Projects
+
+- [Backstage](https://github.com/echohello-dev/backstage): A production-ready Backstage in a showcase emphasizing developer portal capabilities and enterprise features.
+- [Website](https://echohello.dev): The website for echoHello
+- [Betterfit](https://github.com/echohello-dev/betterfit): A workout tracker with auto-tracking capability
+- [Yell](https://github.com/echohello-dev/yell): A Kahoot / Menti alternative to live quizzes with a spin!
+- [Wingman](https://github.com/echohello-dev/wingman): A Slackbot that can help enhance your channel
+- [Transcribe Me](https://github.com/echohello-dev/transcribe-yt): The transcriber that uses Anthropic and OpenAI.
+
+## Developer Documentation
+
+- [AI Agent Guide](https://echohello.dev/AGENTS.md): Comprehensive development guide with architecture patterns, content pipeline, workflows, and design system
+- [README](https://echohello.dev/README.md): Quick start guide with setup instructions and development commands
+- [Contentlayer Config](https://github.com/echohello-dev/website/blob/main/contentlayer.config.ts): Content schema definitions for Projects and Pages document types
+
+## Technical Stack
+
+- [Next.js 16](https://nextjs.org/): App Router with static site generation
+- [Contentlayer2](https://github.com/contentlayerdev/contentlayer): MDX content compilation with TypeScript type generation
+- [Tailwind CSS 4](https://tailwindcss.com/): Utility-first CSS with custom theming via CSS variables
+- [next-themes](https://github.com/pacocoursey/next-themes): Dark/light mode with system preference support
+
+## Optional
+
+- [Package.json](https://github.com/echohello-dev/website/blob/main/package.json): Full dependency list and build scripts
+- [TypeScript Config](https://github.com/echohello-dev/website/blob/main/tsconfig.json): Strict mode TypeScript configuration
+- [ESLint Config](https://github.com/echohello-dev/website/blob/main/eslint.config.mjs): Flat config with Next.js and Prettier rules
+- [Next.js Config](https://github.com/echohello-dev/website/blob/main/next.config.ts): Static export with Contentlayer integration

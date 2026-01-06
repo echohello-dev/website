@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import dynamic from "next/dynamic";
 import type { ApexOptions } from "apexcharts";
 
@@ -17,12 +17,6 @@ export default function ContributionChart({
   commitActivity,
 }: ContributionChartProps) {
   const [timeRange, setTimeRange] = useState<TimeRange>("12m");
-  const [mounted, setMounted] = useState(false);
-
-  // Only render chart after component mounts on client
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   if (!commitActivity || commitActivity.length === 0) {
     return null;
@@ -221,19 +215,15 @@ export default function ContributionChart({
         ))}
       </div>
 
-      {/* Chart - only render after client mount */}
+      {/* Chart */}
       <div className="w-full h-16">
-        {mounted ? (
-          <Chart
-            options={options}
-            series={series}
-            type="area"
-            height="100%"
-            width="100%"
-          />
-        ) : (
-          <div className="w-full h-full bg-gradient-to-t from-accent/5 to-accent/20 animate-pulse rounded" />
-        )}
+        <Chart
+          options={options}
+          series={series}
+          type="area"
+          height="100%"
+          width="100%"
+        />
       </div>
     </div>
   );

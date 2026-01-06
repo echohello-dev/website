@@ -78,7 +78,6 @@ describe("Data Layer", () => {
   describe("getProjects()", () => {
     beforeEach(() => {
       // Save original env
-      process.env.NODE_ENV = "development";
       delete process.env.USE_GITHUB_DATA;
     });
 

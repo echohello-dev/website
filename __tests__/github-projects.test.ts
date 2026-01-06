@@ -121,7 +121,6 @@ describe("GitHub Projects Utilities", () => {
 
     it("should handle empty description", () => {
       const description =
-        null ||
         "A GitHub repository with useful functionality and active development.";
 
       expect(description).toBeDefined();

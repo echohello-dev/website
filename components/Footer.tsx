@@ -16,16 +16,9 @@ export default function Footer() {
             >
               [GITHUB]
             </a>
+
             <a
-              href="https://twitter.com/echohello"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs text-muted hover:text-accent transition-colors"
-            >
-              [TWITTER]
-            </a>
-            <a
-              href="https://linkedin.com/company/echohello"
+              href="https://linkedin.com/in/johnnyhuy"
               target="_blank"
               rel="noopener noreferrer"
               className="text-xs text-muted hover:text-accent transition-colors"

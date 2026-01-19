@@ -282,8 +282,8 @@ export async function getProjects(): Promise<Project[]> {
     message: `Getting projects in ${env} environment... (USE_GITHUB_DATA=${useGitHubData})`,
   });
 
-  // In development, use hardcoded projects unless USE_GITHUB_DATA is set
-  if (env === "development" && !useGitHubData) {
+  // In development/test, use hardcoded projects unless USE_GITHUB_DATA is set
+  if ((env === "development" || env === "test") && !useGitHubData) {
     console.info({
       timestamp: new Date().toISOString(),
       operation: "get_projects_dev",
